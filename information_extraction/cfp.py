@@ -1,4 +1,5 @@
 import dateparser
+from bs4 import BeautifulSoup
 
 """
 Class representing a Call for Paper.
@@ -8,9 +9,9 @@ Class representing a Call for Paper.
 
 class Cfp:
 
-    def __init__(self, name = "DEFAULT NAME", start_date = "01/01/1970", end_date = "02/01/1970",
-                 location = "Lowestoft", submission_deadline = "31/12/1969", notification_due = "31/12/1969",
-                 final_version_deadline = "31/12/1969", cfp_text = "DEFAULT CFP_TEXT"):
+    def __init__(self, name="DEFAULT NAME", start_date="01/01/1970", end_date="02/01/1970",
+                 location="Lowestoft", submission_deadline="31/12/1969", notification_due="31/12/1969",
+                 final_version_deadline="31/12/1969", cfp_text="DEFAULT CFP_TEXT"):
         self.name = name
         self.start_date = start_date
         self.end_date = end_date
@@ -18,17 +19,19 @@ class Cfp:
         self.submission_deadline = submission_deadline
         self.notification_due = notification_due
         self.final_version_deadline = final_version_deadline
-        self.cfp_text = cfp_text
+        self.cfp_text = self.remove_noise(cfp_text)
 
     """
     Function to better display the attributes of a CFP when printed.
     Overrides the build in __str__ method.
     """
+
     def __str__(self):
         return "NAME: {} START: {} END: {} LOCATION: {} \n SUBMISSION DEADLINE: {} " \
                "NOTIFICATION DUE: {} FINAL VERSION DEADLINE: {}".format(self.name, self.start_date, self.end_date,
-                                                   self.location, self.submission_deadline,
-                                                   self.notification_due, self.final_version_deadline)
+                                                                        self.location, self.submission_deadline,
+                                                                        self.notification_due,
+                                                                        self.final_version_deadline)
 
     # given a CFP object, return a list of the locations it contains
     def extract_locations(self, nlp):
@@ -51,12 +54,14 @@ class Cfp:
         split_cfp_text = self.cfp_text.splitlines()
 
         for sent in split_cfp_text:
+            print(sent)
             doc = nlp(sent)
             # print (sent)
 
             # for each sentence in the cfp, NER tag it.
             # if there is a data in the sentence, store the data and the sentence it is contained in,
             # and map date -> sentence.
+
             for entity in doc.ents:
                 if entity.label_ == "DATE":
                     date = entity.text
@@ -68,11 +73,11 @@ class Cfp:
         # returns a dictionary of form (date -> sentence)
         return date_to_sentence
 
-    """
+
     def remove_noise(self, text):
         text = BeautifulSoup(text, "html.parser").get_text()  # removes any HTML tags
         # text = re.sub("(\\W|\\d)", " ", text)  # removes any non-ASCII characters
         # text = text.replace("\n", "")
         text = text.strip()
         return text
-    """
+

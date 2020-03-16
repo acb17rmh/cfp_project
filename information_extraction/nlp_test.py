@@ -1,13 +1,12 @@
 from __future__ import unicode_literals, print_function
 import pandas
-import datefinder
 import spacy
 import re
 import pprint
 from cfp import Cfp
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv(r'C:\Users\Richard\Documents\project\information_extraction\new_cfps.csv').head(1)
+dataframe = pandas.read_csv('data/wikicfp_sorted.csv').head(1)
 dataframe['start_date']= pandas.to_datetime(dataframe['start_date'], format='%d/%m/%Y')
 dataframe['end_date']= pandas.to_datetime(dataframe['end_date'], format='%d/%m/%Y')
 dataframe['submission_deadline']= pandas.to_datetime(dataframe['submission_deadline'], format='%d/%m/%Y')

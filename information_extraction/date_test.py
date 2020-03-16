@@ -8,7 +8,7 @@ import spacy
 from cfp import Cfp
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv('wikicfp_sorted.csv').head(5)
+dataframe = pandas.read_csv('data/wikicfp_sorted.csv').head(5)
 dataframe['start_date']= pandas.to_datetime(dataframe['start_date'], format='%d/%m/%Y')
 dataframe['end_date']= pandas.to_datetime(dataframe['end_date'], format='%d/%m/%Y')
 dataframe['submission_deadline']= pandas.to_datetime(dataframe['submission_deadline'], format='%d/%m/%Y')
@@ -28,7 +28,7 @@ for row in dataframe.itertuples():
     cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14])
     cfps.append(cfp)
 
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en")
 
 # dictionary mapping a cfp to the dates within in
 cfp_to_dates = {}
