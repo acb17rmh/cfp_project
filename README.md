@@ -12,14 +12,8 @@
 
 ## Installation
 
-- All the `code` required to get started
-- Images of what it should look like
-
----
-
-### Clone
-
 - Clone this repo to your local machine using `git clone https://github.com/acb17rmh/cfp_project`
+- Install required dependencies: `pip install -r requirements.txt`
 
 ---
 

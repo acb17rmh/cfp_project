@@ -54,9 +54,7 @@ class Cfp:
         split_cfp_text = self.cfp_text.splitlines()
 
         for sent in split_cfp_text:
-            print(sent)
             doc = nlp(sent)
-            # print (sent)
 
             # for each sentence in the cfp, NER tag it.
             # if there is a data in the sentence, store the data and the sentence it is contained in,

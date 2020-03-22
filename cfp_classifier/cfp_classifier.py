@@ -35,7 +35,9 @@ def preprocess_text(text):
 
 # get the stoplist from the NLTK corpus
 stoplist = (stopwords.words("english"))
+
 # load in the labelled data
+# TODO: ability to specify own dataset from the command line
 data = pd.read_csv('data/new_labelled_data.csv').dropna()
 
 # Splits the text into a feature vector where each feature is a word

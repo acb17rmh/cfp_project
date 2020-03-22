@@ -1,3 +1,4 @@
 source_data/
 information_extraction/data
 cfp_classifier/data
+venv/
