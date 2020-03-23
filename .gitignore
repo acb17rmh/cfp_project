@@ -1,4 +1,5 @@
 source_data/
 information_extraction/data
+information_extraction/results
 cfp_classifier/data
 venv/

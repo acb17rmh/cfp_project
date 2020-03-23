@@ -13,28 +13,29 @@ cfps = []
 cfp_to_location = {}
 cfp_to_dates = {}
 
-# converts each row in the sample data into a CFP object
-for row in dataframe.itertuples():
-    cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14])
-    cfps.append(cfp)
-
-for cfp in cfps:
-    cfp_to_location[cfp] = cfp.extract_locations(nlp)
-
 score = 0
 accuracy = 0
 
+# converts each row in the sample data into a CFP object
 # if the determined location is included in the labelled location, consider it correct
-for cfp in cfp_to_location:
+for row in dataframe.itertuples():
+    cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14])
+    cfp_to_location[cfp] = cfp.extract_locations(nlp)
+    cfp_dict = cfp.as_dict()
+
     # Gets the first location extracted and uses that as the location (not final)
     if cfp_to_location[cfp]:
-        print(cfp.location + " --------- " + cfp_to_location[cfp][0])
-        if cfp_to_location[cfp][0] in cfp.location:
+        detected_location = cfp_to_location[cfp][0]
+        if detected_location in cfp.location:
             score += 1
-    else:
-        print(cfp.name)
+
+    cfp_dict['detected_location'] = detected_location
+    cfps.append(cfp_dict)
 
 accuracy = score / len(cfp_to_location.keys())
+
+results_dataframe = pandas.DataFrame(cfp for cfp in cfps)
+results_dataframe.to_html("results/location_results.html")
 
 print("TOTAL CORRECT LOCATIONS: " + str(score))
 print("TOTAL CFPs: " + str(len(cfp_to_location.keys())))

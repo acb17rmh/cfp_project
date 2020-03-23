@@ -33,6 +33,15 @@ class Cfp:
                                                                         self.notification_due,
                                                                         self.final_version_deadline)
 
+    def as_dict(self):
+        return {'name': self.name,
+                'start_date': self.start_date,
+                'end_date': self.end_date,
+                'location': self.location,
+                'submission_deadline': self.submission_deadline,
+                'notification_due': self.notification_due,
+                'final_version_deadline': self.final_version_deadline}
+
     # given a CFP object, return a list of the locations it contains
     def extract_locations(self, nlp):
         doc = nlp(self.cfp_text)

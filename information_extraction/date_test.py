@@ -25,11 +25,6 @@ cfps = []
 pp = pprint.PrettyPrinter(indent=4)
 nlp = spacy.load("en_core_web_sm")
 
-# TODO: find more readable way of creating CFP list?
-for row in dataframe.itertuples():
-    cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14])
-    cfps.append(cfp)
-
 # dictionary mapping a cfp to the dates within it
 cfp_to_dates = {}
 conference_start_score = 0
@@ -38,7 +33,13 @@ notification_score = 0
 final_version_score = 0
 triggers = 0
 
-for cfp in cfps:
+# TODO: find more readable way of creating CFP list?
+for row in dataframe.itertuples():
+
+    # Turn each row of raw data into a CFP object
+    cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14])
+    cfp_dict = cfp.as_dict()
+    cfps.append(cfp_dict)
 
     date_to_sentence = cfp.extract_dates(nlp)
     cfp_to_dates[cfp] = date_to_sentence
@@ -79,5 +80,12 @@ for cfp in cfps:
     if final_version_deadline == cfp.final_version_deadline:
         final_version_score += 1
 
-# TODO: write results to an HTML page or dataframe
+    cfp_dict['detected_start_date'] = conference_start
+    cfp_dict['detected_submission_deadline'] = submission_deadline
+    cfp_dict['detected_notification_due'] = notification_due
+    cfp_dict['detected_final_version_deadline'] = final_version_deadline
+
+results_dataframe = pandas.DataFrame(cfp for cfp in cfps)
+results_dataframe.to_html("results/date_results.html")
+
 print (conference_start_score, submission_score, notification_score, final_version_score)
