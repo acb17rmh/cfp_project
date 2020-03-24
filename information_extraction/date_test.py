@@ -6,9 +6,10 @@ import pprint
 import re
 import spacy
 from cfp import Cfp
+import time
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv('data/wikicfp_sorted.csv')
+dataframe = pandas.read_csv('data/wikicfp_sorted.csv').head(10)
 dataframe['start_date']= pandas.to_datetime(dataframe['start_date'], format='%d/%m/%Y')
 dataframe['end_date']= pandas.to_datetime(dataframe['end_date'], format='%d/%m/%Y')
 dataframe['submission_deadline']= pandas.to_datetime(dataframe['submission_deadline'], format='%d/%m/%Y')
@@ -51,7 +52,6 @@ for row in dataframe.itertuples():
 
     # Naive method, use first detected date as conference start date
     # TODO: find a better way to extract conference dates
-    # TODO: conference name extraction
     conference_start = list(date_to_sentence.keys())[0]
     conference_start = dateparser.parse(conference_start)
 
@@ -87,6 +87,6 @@ for row in dataframe.itertuples():
     cfp_dict['detected_final_version_deadline'] = final_version_deadline
 
 results_dataframe = pandas.DataFrame(cfp for cfp in cfps)
-results_dataframe.to_html("results/date_results.html")
+results_dataframe.to_html("results/date_results{}.html".format(time.time()))
 
 print (conference_start_score, submission_score, notification_score, final_version_score)

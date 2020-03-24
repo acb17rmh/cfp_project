@@ -8,6 +8,7 @@ Class representing a Call for Paper.
 
 """
 
+
 class Cfp:
 
     def __init__(self, name="DEFAULT NAME", start_date="01/01/1970", end_date="02/01/1970",
@@ -81,8 +82,14 @@ class Cfp:
         # returns a dictionary of form (date -> sentence)
         return date_to_sentence
 
-    def extract_conference_name(self, nlp, CONFERENCE_NAME_REGEX = re.compile('$^'), ORDINAL_REGEX = re.compile('$^'),
-                                           CONJUNCTION_REGEX = re.compile('$^'), URL_REGEX = re.compile('$^')):
+    """
+    Method to extract the conference name from a CFP text. Uses rule-based patterns to assign scores to substrings
+    of the CFP's text, and returns the one with the highest score.
+    """
+
+    # TODO: improve conference name extraction
+    def extract_conference_name(self, nlp, CONFERENCE_NAME_REGEX=re.compile('$^'), ORDINAL_REGEX=re.compile('$^'),
+                                CONJUNCTION_REGEX=re.compile('$^'), URL_REGEX=re.compile('$^')):
         # a dictionary of form (sentence -> score)
         candidate_names = {}
         split_cfp_text = self.cfp_text.splitlines()
@@ -91,7 +98,7 @@ class Cfp:
         for sent in split_cfp_text:
             score = 0
             if counter < 5:
-                counter += 10 - (2*counter)
+                counter += 10 - (2 * counter)
             if CONFERENCE_NAME_REGEX.search(sent):
                 score += 10
             if ORDINAL_REGEX.search(sent) and counter < 5:
@@ -115,4 +122,3 @@ class Cfp:
         # text = text.replace("\n", "")
         text = text.strip()
         return text
-
