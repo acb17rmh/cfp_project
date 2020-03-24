@@ -55,6 +55,7 @@ test_size parameter specifies that 25% of the data is used for testing, 75% used
 data_train, data_test, label_train, label_test = train_test_split(email_vectors, data['class'], test_size=0.25,
                                                                   random_state=0)
 
+
 # Initilialises the naive bayes classifier and supplies it with the training data
 # Which is then used to trjain the classifier
 
@@ -64,6 +65,9 @@ classifier.fit(data_train, label_train)
 
 # Predict the class (cfp or email) of the testing data
 predictions = classifier.predict(data_test)
+
+print (predictions)
+
 
 # print accuracy, recall, precision and f-measure
 print("ACCURACY: " + str(accuracy_score(label_test, predictions)))

@@ -1,4 +1,5 @@
 import dateparser
+import re
 from bs4 import BeautifulSoup
 
 """
@@ -80,6 +81,33 @@ class Cfp:
         # returns a dictionary of form (date -> sentence)
         return date_to_sentence
 
+    def extract_conference_name(self, nlp, CONFERENCE_NAME_REGEX = re.compile('$^'), ORDINAL_REGEX = re.compile('$^'),
+                                           CONJUNCTION_REGEX = re.compile('$^'), URL_REGEX = re.compile('$^')):
+        # a dictionary of form (sentence -> score)
+        candidate_names = {}
+        split_cfp_text = self.cfp_text.splitlines()
+        counter = 0
+
+        for sent in split_cfp_text:
+            score = 0
+            if counter < 5:
+                counter += 10 - (2*counter)
+            if CONFERENCE_NAME_REGEX.search(sent):
+                score += 10
+            if ORDINAL_REGEX.search(sent) and counter < 5:
+                score += 5
+            if CONJUNCTION_REGEX.search(sent):
+                score -= 5
+            if URL_REGEX.search(sent):
+                score -= 3
+            if len(sent.split()) < 4 or len(sent.split()) > 20:
+                score -= 15
+            candidate_names[sent] = score
+            counter += 1
+
+        # return the sentence with the highest score
+        highest_score = (max(candidate_names, key=candidate_names.get))
+        return highest_score
 
     def remove_noise(self, text):
         text = BeautifulSoup(text, "html.parser").get_text()  # removes any HTML tags

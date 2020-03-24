@@ -51,6 +51,7 @@ for row in dataframe.itertuples():
 
     # Naive method, use first detected date as conference start date
     # TODO: find a better way to extract conference dates
+    # TODO: conference name extraction
     conference_start = list(date_to_sentence.keys())[0]
     conference_start = dateparser.parse(conference_start)
 
