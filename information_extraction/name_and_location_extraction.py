@@ -9,10 +9,10 @@ nlp = spacy.load("en_core_web_sm")
 dataframe = pandas.read_csv("data/wikicfp_sorted.csv")
 cfps = []
 
-CONFERENCE_NAME_REGEX = re.compile("|".join(["workshop", "conference", "meeting", "theme"]), re.IGNORECASE)
+CONFERENCE_NAME_REGEX = re.compile("|".join(["workshop", "conference", "meeting", "theme", "international"]), re.IGNORECASE)
 ORDINAL_REGEX = re.compile("|".join(["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "nineth",
                                      "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]), re.IGNORECASE)
-CONJUNCTION_REGEX = re.compile("|".join(["conjunction", "assosciate", "joint"]), re.IGNORECASE)
+CONJUNCTION_REGEX = re.compile("|".join(["conjunction", "assosciate", "joint", "located"]), re.IGNORECASE)
 URL_REGEX = re.compile("|".join(["http", ".co.uk", ".com"]), re.IGNORECASE)
 
 # dictionaries containing locations and dates
@@ -33,12 +33,13 @@ for row in dataframe.itertuples():
     cfp_to_location[cfp] = cfp.extract_locations(nlp)
     cfp_dict = cfp.as_dict()
 
-    # Gets the first location extracted and uses that as the location (not final)
+
     if cfp_to_conference_name[cfp]:
         detected_conference_name = cfp_to_conference_name[cfp]
         if detected_conference_name in cfp.name or cfp.name in detected_conference_name:
             conference_name_score += 1
 
+    # Gets the first location extracted and uses that as the location (not final)
     if cfp_to_location[cfp]:
         detected_location = cfp_to_location[cfp][0]
         if detected_location in cfp.location:

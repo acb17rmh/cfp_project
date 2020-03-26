@@ -9,7 +9,7 @@ from cfp import Cfp
 import time
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv('data/wikicfp_sorted.csv').head(10)
+dataframe = pandas.read_csv('data/wikicfp_sorted.csv')
 dataframe['start_date']= pandas.to_datetime(dataframe['start_date'], format='%d/%m/%Y')
 dataframe['end_date']= pandas.to_datetime(dataframe['end_date'], format='%d/%m/%Y')
 dataframe['submission_deadline']= pandas.to_datetime(dataframe['submission_deadline'], format='%d/%m/%Y')
@@ -22,6 +22,17 @@ SUBMISSION_DEADLINE_REGEX = re.compile("|".join(["submit", "submission", "paper"
 FINAL_VERSION_DEADLINE_REGEX = re.compile("|".join(["final", "camera", "ready", "camera-ready", "last"]))
 NOTIFICATION_DEADLINE_REGEX = re.compile("|".join(["notice", "notices", "notified", "notification", "notifications"]))
 
+# Takes a split date in the form DD-DD Month Year
+# and returns a tuple of datetime objects
+# TODO: split conference dates into start and end
+def split_date(date):
+    if "-" in date:
+        new_date = date.split("-")[1]
+        return (dateparser.parse(date), dateparser.parse(new_date))
+    else:
+        return (dateparser.parse(date), None)
+
+
 cfps = []
 pp = pprint.PrettyPrinter(indent=4)
 nlp = spacy.load("en_core_web_sm")
@@ -29,6 +40,7 @@ nlp = spacy.load("en_core_web_sm")
 # dictionary mapping a cfp to the dates within it
 cfp_to_dates = {}
 conference_start_score = 0
+conference_end_score = 0
 submission_score = 0
 notification_score = 0
 final_version_score = 0
@@ -51,9 +63,11 @@ for row in dataframe.itertuples():
     final_version_deadline = None
 
     # Naive method, use first detected date as conference start date
-    # TODO: find a better way to extract conference dates
     conference_start = list(date_to_sentence.keys())[0]
-    conference_start = dateparser.parse(conference_start)
+    print (conference_start)
+    split_dates = split_date(conference_start)
+    conference_start = split_dates[0]
+    conference_end = split_dates[1]
 
     for date in date_to_sentence:
         sentence = date_to_sentence[date]
@@ -74,6 +88,8 @@ for row in dataframe.itertuples():
 
     if conference_start == cfp.start_date:
         conference_start_score += 1
+    if conference_end == cfp.end_date:
+        conference_end_score += 1
     if submission_deadline == cfp.submission_deadline:
        submission_score += 1
     if notification_due == cfp.notification_due:
@@ -82,6 +98,7 @@ for row in dataframe.itertuples():
         final_version_score += 1
 
     cfp_dict['detected_start_date'] = conference_start
+    cfp_dict['detected_end_date'] = conference_end
     cfp_dict['detected_submission_deadline'] = submission_deadline
     cfp_dict['detected_notification_due'] = notification_due
     cfp_dict['detected_final_version_deadline'] = final_version_deadline
@@ -89,4 +106,4 @@ for row in dataframe.itertuples():
 results_dataframe = pandas.DataFrame(cfp for cfp in cfps)
 results_dataframe.to_html("results/date_results{}.html".format(time.time()))
 
-print (conference_start_score, submission_score, notification_score, final_version_score)
+print (conference_start_score, conference_end_score, submission_score, notification_score, final_version_score)

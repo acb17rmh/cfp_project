@@ -92,7 +92,7 @@ class Cfp:
                                 CONJUNCTION_REGEX=re.compile('$^'), URL_REGEX=re.compile('$^')):
         # a dictionary of form (sentence -> score)
         candidate_names = {}
-        split_cfp_text = self.cfp_text.splitlines()
+        split_cfp_text = self.preprocess_text()
         counter = 0
 
         for sent in split_cfp_text:
@@ -101,7 +101,7 @@ class Cfp:
                 counter += 10 - (2 * counter)
             if CONFERENCE_NAME_REGEX.search(sent):
                 score += 10
-            if ORDINAL_REGEX.search(sent) and counter < 5:
+            if ORDINAL_REGEX.search(sent) and counter < 10:
                 score += 5
             if CONJUNCTION_REGEX.search(sent):
                 score -= 5
@@ -112,6 +112,7 @@ class Cfp:
             candidate_names[sent] = score
             counter += 1
 
+        print(candidate_names)
         # return the sentence with the highest score
         highest_score = (max(candidate_names, key=candidate_names.get))
         return highest_score
@@ -122,3 +123,19 @@ class Cfp:
         # text = text.replace("\n", "")
         text = text.strip()
         return text
+
+    def preprocess_text(self):
+        split_text = self.cfp_text.splitlines()
+        split_text = [sent for sent in split_text if sent is not ""]
+        for index, sent in enumerate(split_text):
+            full_name = None
+            if sent == "":
+                split_text.remove(sent)
+            if "  " in sent:
+                split_text.remove(sent)
+            if sent.endswith(" on") and ("conference" in sent.lower() or "workshop" in sent.lower() or
+                                         "international" in sent.lower() or "symposium" in sent.lower()):
+                full_name = (split_text[index] + " " + split_text[index + 1])
+                return [full_name]
+        return split_text
+
