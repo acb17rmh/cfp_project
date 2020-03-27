@@ -50,6 +50,7 @@ class Cfp:
     """
     Function which extracts mentions of locations from the CFP's text.
     Takes a SpaCy NLP object as a parameter, in order to NER tag the text.
+    Returns a list of locations mentioned in the text.
     """
     def extract_locations(self, nlp):
         doc = nlp(self.cfp_text)
@@ -98,6 +99,7 @@ class Cfp:
     Method to extract the conference name from a CFP text. Uses rule-based patterns to assign scores to substrings
     of the CFP's text, and returns the one with the highest score. Takes regex patterns containing key words to filter
     by as parameters. By default, these regexes will match any string.
+    Returns the sentence within the text with the highest score.
     """
 
     # TODO: improve conference name extraction
@@ -130,6 +132,10 @@ class Cfp:
         highest_score = (max(candidate_names, key=candidate_names.get))
         return highest_score
 
+    """
+    Method to parse text and remove any HTML tags from it.
+    Returns a list of URLs found in the CFP's text.
+    """
     def extract_urls(self, WEB_URL_REGEX=re.compile('$^')):
         urls = []
         split_cfp_text = self.preprocess_text()
@@ -140,6 +146,7 @@ class Cfp:
 
     """
     Method to parse text and remove any HTML tags from it.
+    Returns the parsed text as a String.
     """
     def remove_noise(self, text):
         text = BeautifulSoup(text, "html.parser").get_text()  # removes any HTML tags
@@ -149,11 +156,13 @@ class Cfp:
         return text
 
     """
-    Method to preprocess text for information extraction. Text is split into sentences and any conference names
+    Method to preprocess text for information extraction. Text is split on newlines and commas, and any conference names
     split over 2 lines are merged into one.
+    Returns a list of sentences.
     """
     def preprocess_text(self):
-        split_text = self.cfp_text.splitlines()
+        text = self.cfp_text.replace("\n", ",")
+        split_text = text.split(",")
         split_text = [sent for sent in split_text if sent is not ""]
         for index, sent in enumerate(split_text):
             if sent == "":
