@@ -12,7 +12,7 @@ class Cfp:
 
     def __init__(self, name="DEFAULT NAME", start_date="01/01/1970", end_date="02/01/1970",
                  location="Lowestoft", submission_deadline="31/12/1969", notification_due="31/12/1969",
-                 final_version_deadline="31/12/1969", cfp_text="DEFAULT CFP_TEXT"):
+                 final_version_deadline="31/12/1969", cfp_text="DEFAULT CFP_TEXT", url="https://google.com"):
         self.name = name
         self.start_date = start_date
         self.end_date = end_date
@@ -21,6 +21,7 @@ class Cfp:
         self.notification_due = notification_due
         self.final_version_deadline = final_version_deadline
         self.cfp_text = self.remove_noise(cfp_text)
+        self.url = url
 
     """
     Function to better display the attributes of a CFP when printed.
@@ -28,10 +29,10 @@ class Cfp:
     """
     def __str__(self):
         return "NAME: {} START: {} END: {} LOCATION: {} \n SUBMISSION DEADLINE: {} " \
-               "NOTIFICATION DUE: {} FINAL VERSION DEADLINE: {}".format(self.name, self.start_date, self.end_date,
+               "NOTIFICATION DUE: {} FINAL VERSION DEADLINE: {} URL: {}".format(self.name, self.start_date, self.end_date,
                                                                         self.location, self.submission_deadline,
                                                                         self.notification_due,
-                                                                        self.final_version_deadline)
+                                                                        self.final_version_deadline, self.url)
 
     """
     Function to return the CFP object as a dictionary.
@@ -43,7 +44,8 @@ class Cfp:
                 'location': self.location,
                 'submission_deadline': self.submission_deadline,
                 'notification_due': self.notification_due,
-                'final_version_deadline': self.final_version_deadline}
+                'final_version_deadline': self.final_version_deadline,
+                'url': self.url}
 
     """
     Function which extracts mentions of locations from the CFP's text.
@@ -128,6 +130,14 @@ class Cfp:
         highest_score = (max(candidate_names, key=candidate_names.get))
         return highest_score
 
+    def extract_urls(self, WEB_URL_REGEX=re.compile('$^')):
+        urls = []
+        split_cfp_text = self.preprocess_text()
+        for sent in split_cfp_text:
+            if WEB_URL_REGEX.search(sent):
+                urls.append(WEB_URL_REGEX.search(sent).group(0))
+        return urls
+
     """
     Method to parse text and remove any HTML tags from it.
     """
@@ -153,5 +163,5 @@ class Cfp:
             if sent.endswith(" on") and ("conference" in sent.lower() or "workshop" in sent.lower() or
                                          "international" in sent.lower() or "symposium" in sent.lower()):
                 full_name = (split_text[index] + " " + split_text[index + 1])
-                return [full_name]
+                return [full_name] + split_text
         return split_text
