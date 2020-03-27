@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 """
 Class representing a Call for Paper.
 @author Richard Hindes
-
 """
 
 
@@ -27,7 +26,6 @@ class Cfp:
     Function to better display the attributes of a CFP when printed.
     Overrides the build in __str__ method.
     """
-
     def __str__(self):
         return "NAME: {} START: {} END: {} LOCATION: {} \n SUBMISSION DEADLINE: {} " \
                "NOTIFICATION DUE: {} FINAL VERSION DEADLINE: {}".format(self.name, self.start_date, self.end_date,
@@ -35,6 +33,9 @@ class Cfp:
                                                                         self.notification_due,
                                                                         self.final_version_deadline)
 
+    """
+    Function to return the CFP object as a dictionary.
+    """
     def as_dict(self):
         return {'name': self.name,
                 'start_date': self.start_date,
@@ -44,7 +45,10 @@ class Cfp:
                 'notification_due': self.notification_due,
                 'final_version_deadline': self.final_version_deadline}
 
-    # given a CFP object, return a list of the locations it contains
+    """
+    Function which extracts mentions of locations from the CFP's text.
+    Takes a SpaCy NLP object as a parameter, in order to NER tag the text.
+    """
     def extract_locations(self, nlp):
         doc = nlp(self.cfp_text)
 
@@ -58,8 +62,14 @@ class Cfp:
 
         return cfp_locations
 
+    """
+    Function which extracts mentions of dates from the CFP's text.
+    Takes a SpaCy NLP object as a parameter, in order to NER tag the text.
+    Returns a dictionary of form {date -> sentence containing that date}.
+    """
     def extract_dates(self, nlp):
-        # a dictonary mapping a date to the sentence it is in
+
+        # a dictionary mapping a date to the sentence it is in
         date_to_sentence = {}
         # returns a list of sentences, split on line breaks.
         split_cfp_text = self.cfp_text.splitlines()
@@ -84,7 +94,8 @@ class Cfp:
 
     """
     Method to extract the conference name from a CFP text. Uses rule-based patterns to assign scores to substrings
-    of the CFP's text, and returns the one with the highest score.
+    of the CFP's text, and returns the one with the highest score. Takes regex patterns containing key words to filter
+    by as parameters. By default, these regexes will match any string.
     """
 
     # TODO: improve conference name extraction
@@ -117,6 +128,9 @@ class Cfp:
         highest_score = (max(candidate_names, key=candidate_names.get))
         return highest_score
 
+    """
+    Method to parse text and remove any HTML tags from it.
+    """
     def remove_noise(self, text):
         text = BeautifulSoup(text, "html.parser").get_text()  # removes any HTML tags
         # text = re.sub("(\\W|\\d)", " ", text)  # removes any non-ASCII characters
@@ -124,11 +138,14 @@ class Cfp:
         text = text.strip()
         return text
 
+    """
+    Method to preprocess text for information extraction. Text is split into sentences and any conference names
+    split over 2 lines are merged into one.
+    """
     def preprocess_text(self):
         split_text = self.cfp_text.splitlines()
         split_text = [sent for sent in split_text if sent is not ""]
         for index, sent in enumerate(split_text):
-            full_name = None
             if sent == "":
                 split_text.remove(sent)
             if "  " in sent:
@@ -138,4 +155,3 @@ class Cfp:
                 full_name = (split_text[index] + " " + split_text[index + 1])
                 return [full_name]
         return split_text
-
