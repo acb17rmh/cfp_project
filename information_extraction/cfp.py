@@ -20,7 +20,7 @@ class Cfp:
         self.submission_deadline = submission_deadline
         self.notification_due = notification_due
         self.final_version_deadline = final_version_deadline
-        self.cfp_text = self.remove_noise(cfp_text)
+        self.cfp_text = cfp_text
         self.url = url
 
     """
@@ -61,7 +61,6 @@ class Cfp:
         for entity in doc.ents:
             if entity.label_ == "GPE":
                 cfp_locations.append(entity.text)
-                break
 
         return cfp_locations
 
@@ -112,18 +111,20 @@ class Cfp:
 
         for sent in split_cfp_text:
             score = 0
-            if counter < 5:
-                counter += 10 - (2 * counter)
-            if CONFERENCE_NAME_REGEX.search(sent):
-                score += 10
-            if ORDINAL_REGEX.search(sent) and counter < 10:
-                score += 5
-            if CONJUNCTION_REGEX.search(sent):
-                score -= 5
-            if URL_REGEX.search(sent):
-                score -= 3
             if len(sent.split()) < 4 or len(sent.split()) > 20:
                 score -= 15
+            for word in sent:
+                if counter < 5:
+                    counter += 10 - (2 * counter)
+                if CONFERENCE_NAME_REGEX.search(word):
+                    score += 10
+                if ORDINAL_REGEX.search(word) and counter < 10:
+                    score += 5
+                if CONJUNCTION_REGEX.search(word):
+                    score -= 5
+                if URL_REGEX.search(word):
+                    score -= 5
+
             candidate_names[sent] = score
             counter += 1
 
