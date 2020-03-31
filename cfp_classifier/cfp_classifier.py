@@ -39,7 +39,7 @@ stoplist = (stopwords.words("english"))
 
 # load in the labelled data
 # TODO: ability to specify own dataset from the command line
-data = pd.read_csv('data/new_labelled_data.csv').head(100).dropna()
+data = pd.read_csv('C:/Users/Richard/PycharmProjects/cfp_project/cfp_classifier/data/new_labelled_data.csv').head(100).dropna()
 
 # Splits the text into a feature vector where each feature is a word
 email_vectors = CountVectorizer(analyzer=preprocess_text).fit_transform(data['text'])

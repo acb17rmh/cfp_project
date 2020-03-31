@@ -6,7 +6,7 @@ import time
 
 # Create a pandas dataframe for the CFPs
 nlp = spacy.load("en_core_web_sm")
-dataframe = pandas.read_csv("data/wikicfp_sorted.csv")
+dataframe = pandas.read_csv('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/wikicfp_sorted.csv')
 cfps = []
 
 CONFERENCE_NAME_REGEX = re.compile("|".join(["workshop", "conference", "meeting", "theme", "international"]), re.IGNORECASE)
@@ -31,8 +31,8 @@ url_score = 0
 
 for row in dataframe.itertuples():
     cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14], str(row[13]))
-    cfp_to_conference_name[cfp] = cfp.extract_conference_name(nlp, CONFERENCE_NAME_REGEX, ORDINAL_REGEX,
-                                                                   CONJUNCTION_REGEX)
+    cfp_to_conference_name[cfp] = cfp.extract_conference_name(CONFERENCE_NAME_REGEX, ORDINAL_REGEX,
+                                                                   CONJUNCTION_REGEX, WEB_URL_REGEX)
     cfp_to_location[cfp] = cfp.extract_locations(nlp)
     cfp_to_url[cfp] = cfp.extract_urls(WEB_URL_REGEX)
     cfp_dict = cfp.as_dict()
@@ -65,7 +65,7 @@ url_accuracy = url_score / len(cfp_to_url.keys())
 
 # write result to an HTML page
 results_dataframe = pandas.DataFrame(cfp for cfp in cfps)
-filename = "results/name_and_location_results{}.html".format(time.time())
+filename = 'C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/results/name_and_location_results{}.html'.format(time.time())
 results_dataframe.to_html(filename)
 print ("Saved results to file {}".format(filename))
 

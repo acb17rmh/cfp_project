@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.5" />
+<title>name_and_location_extraction API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>name_and_location_extraction</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import pandas
+import spacy
+from cfp import Cfp
+import re
+import time
+
+# Create a pandas dataframe for the CFPs
+nlp = spacy.load(&#34;en_core_web_sm&#34;)
+dataframe = pandas.read_csv(&#39;C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/wikicfp_sorted.csv&#39;)
+cfps = []
+
+CONFERENCE_NAME_REGEX = re.compile(&#34;|&#34;.join([&#34;workshop&#34;, &#34;conference&#34;, &#34;meeting&#34;, &#34;theme&#34;, &#34;international&#34;]), re.IGNORECASE)
+ORDINAL_REGEX = re.compile(&#34;|&#34;.join([&#34;first&#34;, &#34;second&#34;, &#34;third&#34;, &#34;fourth&#34;, &#34;fifth&#34;, &#34;sixth&#34;, &#34;seventh&#34;, &#34;eighth&#34;, &#34;nineth&#34;,
+                                     &#34;1st&#34;, &#34;2nd&#34;, &#34;3rd&#34;, &#34;4th&#34;, &#34;5th&#34;, &#34;6th&#34;, &#34;7th&#34;, &#34;8th&#34;, &#34;9th&#34;]), re.IGNORECASE)
+CONJUNCTION_REGEX = re.compile(&#34;|&#34;.join([&#34;conjunction&#34;, &#34;assosciate&#34;, &#34;joint&#34;, &#34;located&#34;]), re.IGNORECASE)
+URL_REGEX = re.compile(&#34;|&#34;.join([&#34;http&#34;, &#34;.co.uk&#34;, &#34;.com&#34;]), re.IGNORECASE)
+WEB_URL_REGEX = re.compile(r&#34;&#34;&#34;(?i)\b((?:https?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)/)(?:[^\s()&lt;&gt;{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:&#39;&#34;.,&lt;&gt;?«»“”‘’])|(?:(?&lt;!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)\b/?(?!@)))&#34;&#34;&#34;)
+
+# dictionaries containing locations and dates
+cfp_to_conference_name = {}
+cfp_to_location = {}
+cfp_to_url = {}
+
+conference_name_score = 0
+location_score = 0
+url_score = 0
+
+# converts each row in the sample data into a CFP object
+# if the determined location is included in the labelled location, consider it correct
+
+
+for row in dataframe.itertuples():
+    cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14], str(row[13]))
+    cfp_to_conference_name[cfp] = cfp.extract_conference_name(CONFERENCE_NAME_REGEX, ORDINAL_REGEX,
+                                                                   CONJUNCTION_REGEX, WEB_URL_REGEX)
+    cfp_to_location[cfp] = cfp.extract_locations(nlp)
+    cfp_to_url[cfp] = cfp.extract_urls(WEB_URL_REGEX)
+    cfp_dict = cfp.as_dict()
+
+
+    if cfp_to_conference_name[cfp]:
+        detected_conference_name = cfp_to_conference_name[cfp]
+        if detected_conference_name in cfp.name or cfp.name in detected_conference_name:
+            conference_name_score += 1
+
+    # Gets the first location extracted and uses that as the location (not final)
+    if cfp_to_location[cfp]:
+        detected_location = cfp_to_location[cfp][0]
+        if detected_location in cfp.location or cfp.location in detected_location:
+            location_score += 1
+
+    if cfp_to_url[cfp]:
+        detected_url = cfp_to_url[cfp][0]
+        if detected_url in cfp.url or cfp.url in detected_url:
+            url_score += 1
+
+    cfp_dict[&#39;detected_location&#39;] = detected_location
+    cfp_dict[&#39;detected_conference_name&#39;] = detected_conference_name
+    cfp_dict[&#39;detected_url&#39;] = detected_url
+    cfps.append(cfp_dict)
+
+conference_name_accuracy = conference_name_score / len(cfp_to_conference_name.keys())
+location_accuracy = location_score / len(cfp_to_location.keys())
+url_accuracy = url_score / len(cfp_to_url.keys())
+
+# write result to an HTML page
+results_dataframe = pandas.DataFrame(cfp for cfp in cfps)
+filename = &#39;C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/results/name_and_location_results{}.html&#39;.format(time.time())
+results_dataframe.to_html(filename)
+print (&#34;Saved results to file {}&#34;.format(filename))
+
+print(&#34;TOTAL CORRECT CONFERENCE NAMES: &#34; + str(conference_name_score))
+print(&#34;ACCURACY: &#34; + str(conference_name_accuracy))
+
+print(&#34;TOTAL CORRECT LOCATIONS: &#34; + str(location_score))
+print(&#34;ACCURACY: &#34; + str(location_accuracy))
+
+print(&#34;TOTAL CORRECT URLS: &#34; + str(url_score))
+print(&#34;ACCURACY: &#34; + str(url_accuracy))
+
+print(&#34;TOTAL CFPs: &#34; + str(len(cfp_to_conference_name.keys())))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -9,7 +9,7 @@ from cfp import Cfp
 import time
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv('data/wikicfp_sorted.csv')
+dataframe = pandas.read_csv('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/wikicfp_sorted.csv')
 dataframe['start_date']= pandas.to_datetime(dataframe['start_date'], format='%d/%m/%Y')
 dataframe['end_date']= pandas.to_datetime(dataframe['end_date'], format='%d/%m/%Y')
 dataframe['submission_deadline']= pandas.to_datetime(dataframe['submission_deadline'], format='%d/%m/%Y')
@@ -104,6 +104,6 @@ for row in dataframe.itertuples():
     cfp_dict['detected_final_version_deadline'] = final_version_deadline
 
 results_dataframe = pandas.DataFrame(cfp for cfp in cfps)
-results_dataframe.to_html("results/date_results{}.html".format(time.time()))
+results_dataframe.to_html('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/results/date_results{}.html'.format(time.time()))
 
 print (conference_start_score, conference_end_score, submission_score, notification_score, final_version_score)
