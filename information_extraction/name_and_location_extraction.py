@@ -46,7 +46,7 @@ for row in dataframe.itertuples():
     # Gets the first location extracted and uses that as the location (not final)
     if cfp_to_location[cfp]:
         detected_location = cfp_to_location[cfp][0]
-        if detected_location in cfp.location:
+        if detected_location in cfp.location or cfp.location in detected_location:
             location_score += 1
 
     if cfp_to_url[cfp]:

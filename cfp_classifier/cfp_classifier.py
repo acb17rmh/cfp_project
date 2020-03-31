@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import confusion_matrix, accuracy_score, recall_score, f1_score, precision_score
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.preprocessing import LabelBinarizer, LabelEncoder
 
 """
 Naive bayes classifier for CFP emails.
@@ -38,7 +39,7 @@ stoplist = (stopwords.words("english"))
 
 # load in the labelled data
 # TODO: ability to specify own dataset from the command line
-data = pd.read_csv('data/new_labelled_data.csv').dropna()
+data = pd.read_csv('data/new_labelled_data.csv').head(100).dropna()
 
 # Splits the text into a feature vector where each feature is a word
 email_vectors = CountVectorizer(analyzer=preprocess_text).fit_transform(data['text'])
@@ -66,9 +67,6 @@ classifier.fit(data_train, label_train)
 # Predict the class (cfp or email) of the testing data
 predictions = classifier.predict(data_test)
 
-print (predictions)
-
-
 # print accuracy, recall, precision and f-measure
 print("ACCURACY: " + str(accuracy_score(label_test, predictions)))
 print("RECALL: " + str(recall_score(label_test, predictions, pos_label="cfp")))
@@ -82,6 +80,15 @@ print(confusion_matrix)
 # 10-fold cross validation score
 cross_validation_scores = cross_val_score(classifier, email_vectors, data['class'], cv=10)
 print(cross_validation_scores.mean())
+
+"""
+# load CFP csv
+test_df = pd.read_csv('../information_extraction/data/wikicfp_sorted.csv')
+test_df = test_df['description']
+vectorizer = CountVectorizer()
+test_dataset = vectorizer.transform(test_df)
+print (classifier.predict(test_dataset))
+"""
 
 """
 # Code for plotting the confusion matrix

@@ -84,7 +84,7 @@ class Cfp:
             # and map date -> sentence.
 
             for entity in doc.ents:
-                if entity.label_ == "DATE":
+                if entity.label_ == "DATE" and len(entity.text) >= 10:
                     date = entity.text
                     date_to_sentence[date] = sent
 
@@ -112,14 +112,14 @@ class Cfp:
         for sent in split_cfp_text:
             score = 0
             if len(sent.split()) < 4 or len(sent.split()) > 20:
-                score -= 15
-            for word in sent:
-                if counter < 5:
-                    counter += 10 - (2 * counter)
+                score -= 50
+            if counter < 5:
+                counter += 10 - (2 * counter)
+            for word in sent.split():
                 if CONFERENCE_NAME_REGEX.search(word):
-                    score += 10
+                    score += 8
                 if ORDINAL_REGEX.search(word) and counter < 10:
-                    score += 5
+                    score += 10
                 if CONJUNCTION_REGEX.search(word):
                     score -= 5
                 if URL_REGEX.search(word):

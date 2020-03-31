@@ -35,7 +35,7 @@ def split_date(date):
 
 cfps = []
 pp = pprint.PrettyPrinter(indent=4)
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load('en_core_web_sm')
 
 # dictionary mapping a cfp to the dates within it
 cfp_to_dates = {}
