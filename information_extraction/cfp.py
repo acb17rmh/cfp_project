@@ -162,7 +162,6 @@ class Cfp:
             candidate_names[sent] = score
             counter += 1
 
-        print(candidate_names)
         # return the sentence with the highest score
         highest_score = (max(candidate_names, key=candidate_names.get))
         return highest_score

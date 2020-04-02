@@ -32,7 +32,7 @@ class CFPClassifier():
             (DataFrame, DataFrame): a tuple of Pandas DataFrames, where the first DataFrame is the training data,
                                     and the second DataFrame is the training data.
         """
-        dataframe = pd.read_csv(data).head(10).dropna()
+        dataframe = pd.read_csv(data).dropna()
         data_train, data_test = train_test_split(dataframe, test_size=test_size)
         return data_train, data_test
 

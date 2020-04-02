@@ -50,7 +50,8 @@ triggers = 0
 for row in dataframe.itertuples():
 
     # Turn each row of raw data into a CFP object
-    cfp = Cfp(row[3], row[5], row[6], row[7], row[9], row[10], row[11], row[14])
+    cfp = Cfp(row.name, row.start_date, row.end_date, row.location, row.submission_deadline, row.notification_due,
+              row.final_version_deadline, row.description, str(row.link))
     cfp_dict = cfp.as_dict()
     cfps.append(cfp_dict)
 
