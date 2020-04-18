@@ -5,8 +5,9 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
+from sklearn import metrics
 import time
 
 
@@ -18,7 +19,7 @@ class CFPClassifier():
         self.vectorizer
         self.classifier = self.train_classifier()
 
-    def load_data(self, data, test_size=0.25):
+    def load_data(self, data, test_size=0.3):
         """
         Function to load a labelled dataset from a CSV file, and split it into a training set and a testing set.
 
@@ -32,7 +33,7 @@ class CFPClassifier():
             (DataFrame, DataFrame): a tuple of Pandas DataFrames, where the first DataFrame is the training data,
                                     and the second DataFrame is the training data.
         """
-        dataframe = pd.read_csv(data).dropna()
+        dataframe = pd.read_csv(data).dropna().head(1000)
         data_train, data_test = train_test_split(dataframe, test_size=test_size)
         return data_train, data_test
 
@@ -75,7 +76,7 @@ class CFPClassifier():
 
     def evaluate(self):
         """
-        Function to run the trained classifer on the test set of data and evaluate its performance.
+        Function to run the trained classifier on the test set of data and evaluate its performance.
         Also exports the results of the evaluation to an HTML document, which is saved in the /results subfolder.
         """
         # Run the classifier on test set and report performance

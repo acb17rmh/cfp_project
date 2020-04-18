@@ -60,6 +60,7 @@ class Cfp:
                 'submission_deadline': self.submission_deadline,
                 'notification_due': self.notification_due,
                 'final_version_deadline': self.final_version_deadline,
+                'cfp_text': self.cfp_text,
                 'url': self.url}
 
 

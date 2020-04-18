@@ -105,6 +105,7 @@ def evaluate_extraction(input_cfp_list):
 
     # write result to an HTML page
     results_dataframe = pandas.DataFrame(cfp for cfp in output_cfp_list)
+    results_dataframe = results_dataframe.dropna(axis=1, how='all')
     filename = 'C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/results/ie_results_{}.html'.format(
         time.time())
     results_dataframe.to_html(filename)
