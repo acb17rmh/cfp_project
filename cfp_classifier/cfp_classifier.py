@@ -14,7 +14,7 @@ import time
 class CFPClassifier():
 
     def __init__(self):
-        self.data_train, self.data_test = self.load_data("data/new_labelled_data.csv")
+        self.data_train, self.data_test = self.load_data("data/corpus.csv")
         self.train_counts, self.test_counts = self.vectorize()
         self.vectorizer
         self.classifier = self.train_classifier()
@@ -33,8 +33,10 @@ class CFPClassifier():
             (DataFrame, DataFrame): a tuple of Pandas DataFrames, where the first DataFrame is the training data,
                                     and the second DataFrame is the training data.
         """
-        dataframe = pd.read_csv(data).dropna().head(1000)
-        data_train, data_test = train_test_split(dataframe, test_size=test_size)
+        dataframe = pd.read_csv(data, encoding="latin-1").fillna(" ")
+        new_df = dataframe[['text', 'class']].copy()
+        print (new_df)
+        data_train, data_test = train_test_split(new_df, test_size=test_size)
         return data_train, data_test
 
     def vectorize(self):

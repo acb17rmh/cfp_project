@@ -142,6 +142,7 @@ class Cfp:
         # a dictionary of form (sentence -> score)
         candidate_names = {}
         split_cfp_text = self.preprocess_text()
+        print (split_cfp_text)
         counter = 0
 
         for sent in split_cfp_text:
@@ -164,7 +165,7 @@ class Cfp:
             counter += 1
 
         # return the sentence with the highest score
-        highest_score = (max(candidate_names, key=candidate_names.get))
+        highest_score = (max(candidate_names, key=candidate_names.get)) if candidate_names else 0
         return highest_score
 
 
@@ -193,9 +194,12 @@ class Cfp:
         Returns:
             list: a list of preprocessed sentences.
         """
-        text = self.cfp_text.replace("\n", ",")
-        split_text = text.split(",")
+        text = self.cfp_text.replace("\n", ". ")
+        text = self.cfp_text.replace("\t", ". ")
+        text = self.cfp_text.replace("  ", ". ")
+        split_text = text.split(". ")
         split_text = [sent for sent in split_text if sent is not ""]
+        """
         for index, sent in enumerate(split_text):
             if sent == "":
                 split_text.remove(sent)
@@ -205,4 +209,5 @@ class Cfp:
                                          "international" in sent.lower() or "symposium" in sent.lower()):
                 full_name = (split_text[index] + " " + split_text[index + 1])
                 return [full_name] + split_text
+        """
         return split_text

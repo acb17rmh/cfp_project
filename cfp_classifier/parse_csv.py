@@ -6,11 +6,13 @@ from nltk.tokenize import word_tokenize
 import string
 
 df1 = pandas.read_csv("data/corpus.csv", encoding="latin-1").fillna(' ')
+new_df = df1[['text', 'class']].copy()
+print (new_df)
 
-df_emails = df1.loc[df1['class'] == "email"]
+df_emails = df1.loc[new_df['class'] == "email"]
 print (df_emails)
 
-df_cfps = df1.loc[df1['class'] == "cfp"]
+df_cfps = df1.loc[new_df['class'] == "cfp"]
 print (df_cfps)
 
 
@@ -37,19 +39,19 @@ def preprocess_text(text):
 
 def get_top_n_words(corpus, n=None):
     text = corpus.apply(preprocess_text)
-    vec = CountVectorizer().fit(corpus)
-    bag_of_words = vec.transform(corpus)
+    vec = CountVectorizer().fit(text)
+    bag_of_words = vec.transform(text)
     sum_words = bag_of_words.sum(axis=0)
     words_freq = [(word, sum_words[0, idx]) for word, idx in vec.vocabulary_.items()]
     words_freq = sorted(words_freq, key = lambda x: x[1], reverse=True)
     return words_freq[:n]
 
-common_words = get_top_n_words(df1['cfp_text'], 10)
+common_words = get_top_n_words(df_emails['text'], 10)
 for word, freq in common_words:
     print(word, freq)
 
-dataframe = pandas.DataFrame(common_words, columns=['cfp_text', 'count'])
-axes = dataframe.plot(kind="bar", x="cfp_text", y="count")
+dataframe = pandas.DataFrame(common_words, columns=['text', 'count'])
+axes = dataframe.plot(kind="bar", x="text", y="count")
 axes.set_xlabel("word")
 axes.set_ylabel("frequency of corpus")
 axes.set_title("Most frequent words in corpus with no stopword removal")

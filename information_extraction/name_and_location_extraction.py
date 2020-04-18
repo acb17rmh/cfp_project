@@ -15,16 +15,17 @@ def create_cfps(file_path):
     """
     cfp_list = []
     if file_path.endswith(".csv"):
-        dataframe = pandas.read_csv(file_path)
-        for row in dataframe.itertuples():
+        dataframe = pandas.read_csv(file_path, encoding="latin-1").head(20).fillna(" ")
+        df_cfps = dataframe.loc[dataframe['class'] == "cfp"]
+        print (df_cfps)
+        for row in df_cfps.itertuples():
             cfp = Cfp(row.name, row.start_date, row.end_date, row.location, row.submission_deadline,
                       row.notification_due,
-                      row.final_version_deadline, row.description, str(row.link))
+                      row.final_version_deadline, row.text, str(row.link))
             cfp_list.append(cfp)
     elif file_path.endswith(".html"):
         input_html = pandas.read_html(file_path)
         dataframe = input_html[0]
-        print(dataframe)
         for row in dataframe.itertuples():
             if row.prediction == "cfp":
                 cfp = Cfp(cfp_text=row.text)
@@ -68,6 +69,7 @@ def evaluate_extraction(input_cfp_list):
     # if the determined location is included in the labelled location, consider it correct
 
     for cfp in input_cfp_list:
+        print (cfp)
         detected_location = None
         detected_url = None
         detected_conference_name = None
@@ -125,5 +127,5 @@ def evaluate_extraction(input_cfp_list):
     return conference_name_accuracy, location_accuracy, url_accuracy
 
 
-cfp_list = create_cfps('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/wikicfp_sorted.csv')
+cfp_list = create_cfps('C:/Users/Richard/PycharmProjects/cfp_project/cfp_classifier/data/corpus.csv')
 evaluate_extraction(cfp_list)
