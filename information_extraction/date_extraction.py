@@ -55,7 +55,7 @@ for row in dataframe.itertuples():
     cfp_dict = cfp.as_dict()
     cfps.append(cfp_dict)
 
-    date_to_sentence = cfp.new_extract_dates(nlp)
+    date_to_sentence = cfp.extract_dates(nlp)
     cfp_to_dates[cfp] = date_to_sentence
 
     conference_start = None
