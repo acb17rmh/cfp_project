@@ -2,19 +2,22 @@ import pandas as pd
 import string
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.utils import shuffle
+from sklearn.decomposition import TruncatedSVD
+import matplotlib.pyplot as plt
 from sklearn import metrics
 import time
 
 
 class CFPClassifier():
 
-    def __init__(self):
-        self.data_train, self.data_test = self.load_data("data/corpus.csv")
+    def __init__(self, corpus):
+        self.data_train, self.data_test = self.load_data(corpus)
         self.train_counts, self.test_counts = self.vectorize()
         self.vectorizer
         self.classifier = self.train_classifier()
@@ -33,8 +36,8 @@ class CFPClassifier():
             (DataFrame, DataFrame): a tuple of Pandas DataFrames, where the first DataFrame is the training data,
                                     and the second DataFrame is the training data.
         """
-        dataframe = pd.read_csv(data, encoding="latin-1").fillna(" ")
-        new_df = dataframe[['text', 'class']].copy()
+        dataframe = shuffle(pd.read_csv(data, encoding="latin-1").fillna(" "))
+        new_df = dataframe[['text', 'class']].copy().head(1000)
         print (new_df)
         data_train, data_test = train_test_split(new_df, test_size=test_size)
         return data_train, data_test
@@ -94,6 +97,14 @@ class CFPClassifier():
         test_set.to_html(filename)
         print("Saved results to file {}".format(filename))
 
+    """
+    def scatter_plot(self):
+        svd = TruncatedSVD(n_components=2).fit(self.train_counts)
+        data2D = svd.transform(self.train_counts)
+        plt.scatter(data2D[:, 0], data2D[:, 1])
+        plt.show()
+    """
+
 def preprocess_text(text):
     """
     Function to preprocess input texts before being vectorized. Performs tokenisation and stopword removal,
@@ -113,5 +124,5 @@ def preprocess_text(text):
     return text_words
 
 if __name__ == "__main__":
-    cfp_classifier = CFPClassifier()
+    cfp_classifier = CFPClassifier("data/corpus.csv")
     cfp_classifier.evaluate()

@@ -51,11 +51,11 @@ for row in dataframe.itertuples():
 
     # Turn each row of raw data into a CFP object
     cfp = Cfp(row.name, row.start_date, row.end_date, row.location, row.submission_deadline, row.notification_due,
-              row.final_version_deadline, row.description, str(row.link))
+              row.final_version_deadline, row.text, str(row.link))
     cfp_dict = cfp.as_dict()
     cfps.append(cfp_dict)
 
-    date_to_sentence = cfp.extract_dates(nlp)
+    date_to_sentence = cfp.new_extract_dates(nlp)
     cfp_to_dates[cfp] = date_to_sentence
 
     conference_start = None
@@ -65,7 +65,6 @@ for row in dataframe.itertuples():
 
     # Naive method, use first detected date as conference start date
     conference_start = list(date_to_sentence.keys())[0]
-    print (conference_start)
     split_dates = split_date(conference_start)
     conference_start = split_dates[0]
     conference_end = split_dates[1]

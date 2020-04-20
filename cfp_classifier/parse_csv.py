@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+
+
 import string
 
 df1 = pandas.read_csv("data/corpus.csv", encoding="latin-1").fillna(' ')
@@ -44,17 +46,19 @@ def get_top_n_words(corpus, n=None):
     sum_words = bag_of_words.sum(axis=0)
     words_freq = [(word, sum_words[0, idx]) for word, idx in vec.vocabulary_.items()]
     words_freq = sorted(words_freq, key = lambda x: x[1], reverse=True)
-    return words_freq[:n]
+    return words_freq[1:n+1]
 
-common_words = get_top_n_words(df_emails['text'], 10)
+common_words = get_top_n_words(new_df['text'], 10)
 for word, freq in common_words:
     print(word, freq)
+
 
 dataframe = pandas.DataFrame(common_words, columns=['text', 'count'])
 axes = dataframe.plot(kind="bar", x="text", y="count")
 axes.set_xlabel("word")
 axes.set_ylabel("frequency of corpus")
-axes.set_title("Most frequent words in corpus with no stopword removal")
+axes.set_title("Most frequent words in corpus with stopword removal")
 
+plt.style.use('seaborn')
 plt.show()
 

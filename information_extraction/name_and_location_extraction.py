@@ -15,7 +15,7 @@ def create_cfps(file_path):
     """
     cfp_list = []
     if file_path.endswith(".csv"):
-        dataframe = pandas.read_csv(file_path, encoding="latin-1").head(20).fillna(" ")
+        dataframe = pandas.read_csv(file_path, encoding="latin-1").fillna(" ")
         df_cfps = dataframe.loc[dataframe['class'] == "cfp"]
         print (df_cfps)
         for row in df_cfps.itertuples():
@@ -127,5 +127,5 @@ def evaluate_extraction(input_cfp_list):
     return conference_name_accuracy, location_accuracy, url_accuracy
 
 
-cfp_list = create_cfps('C:/Users/Richard/PycharmProjects/cfp_project/cfp_classifier/data/corpus.csv')
+cfp_list = create_cfps('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/wikicfp_sorted.csv')
 evaluate_extraction(cfp_list)

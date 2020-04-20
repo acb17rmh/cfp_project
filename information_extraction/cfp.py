@@ -98,25 +98,17 @@ class Cfp:
         # returns a list of sentences, split on line breaks.
         split_cfp_text = self.cfp_text.splitlines()
 
-        for sent in split_cfp_text:
-            doc = nlp(sent)
-
-            # for each sentence in the cfp, NER tag it.
-            # if there is a data in the sentence, store the data and the sentence it is contained in,
-            # and map date -> sentence.
-
-            for entity in doc.ents:
+        for sentence_doc in nlp.pipe(split_cfp_text, batch_size=len(split_cfp_text)):
+            for entity in sentence_doc.ents:
                 if entity.label_ == "DATE" and len(entity.text) >= 10:
                     date = entity.text
-                    date_to_sentence[date] = sent
+                    date_to_sentence[date] = sentence_doc.text[:]
 
-        # removes any dates that cannot be parsed, i.e are incomplete, and makes sentence lowercase for next step
+            # removes any dates that cannot be parsed, i.e are incomplete, and makes sentence lowercase for next step
         date_to_sentence = {date: sent.lower() for date, sent in date_to_sentence.items() if
                             dateparser.parse(date) is not None}
         # returns a dictionary of form (date -> sentence)
         return date_to_sentence
-
-
 
     # TODO: improve conference name extraction
     def extract_conference_name(self, conference_name_regex=re.compile('$^'), ordinal_regex=re.compile('$^'),
@@ -194,6 +186,7 @@ class Cfp:
         Returns:
             list: a list of preprocessed sentences.
         """
+        text = self.cfp_text.strip("\n")
         text = self.cfp_text.replace("\n", ". ")
         text = self.cfp_text.replace("\t", ". ")
         text = self.cfp_text.replace("  ", ". ")
