@@ -15,8 +15,10 @@ def create_cfps(file_path):
     """
     cfp_list = []
     if file_path.endswith(".csv"):
-        dataframe = pandas.read_csv(file_path, encoding="latin-1").fillna(" ").head(300)
-        for row in dataframe.itertuples():
+        dataframe = pandas.read_csv(file_path, encoding="latin-1").fillna(" ")
+        df_cfps = dataframe.loc[dataframe['class'] == "cfp"]
+        print (df_cfps)
+        for row in df_cfps.itertuples():
             cfp = Cfp(row.name, row.start_date, row.end_date, row.location, row.submission_deadline,
                       row.notification_due,
                       row.final_version_deadline, row.text, str(row.link))
@@ -44,10 +46,10 @@ def evaluate_extraction(input_cfp_list):
     nlp = spacy.load("en_core_web_sm")
 
     output_cfp_list = []
-    CONFERENCE_NAME_REGEX = re.compile("|".join(["workshop", "conference", "meeting", "theme", "international", "colloquium", "symposium"]),
+    CONFERENCE_NAME_REGEX = re.compile("|".join(["workshop", "conference", "meeting", "theme", "international"]),
                                        re.IGNORECASE)
     ORDINAL_REGEX = re.compile(
-        "|".join(["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
+        "|".join(["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "nineth",
                   "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]), re.IGNORECASE)
     CONJUNCTION_REGEX = re.compile("|".join(["conjunction", "assosciate", "joint", "located"]), re.IGNORECASE)
     WEB_URL_REGEX = re.compile(
@@ -71,34 +73,27 @@ def evaluate_extraction(input_cfp_list):
         detected_url = None
         detected_conference_name = None
 
-        cfp_dict = cfp.as_dict()
-
-        extracted_names = cfp.extract_conference_name(CONFERENCE_NAME_REGEX, ORDINAL_REGEX,
+        cfp_to_conference_name[cfp] = cfp.extract_conference_name(CONFERENCE_NAME_REGEX, ORDINAL_REGEX,
                                                                   CONJUNCTION_REGEX, WEB_URL_REGEX)
-        cfp_dict['name_scores'] = extracted_names[0]
-        cfp_to_conference_name[cfp] = extracted_names[1]
         cfp_to_location[cfp] = cfp.extract_locations(nlp)
         cfp_to_url[cfp] = cfp.extract_urls(WEB_URL_REGEX)
-
+        cfp_dict = cfp.as_dict()
 
         if cfp_to_conference_name[cfp]:
             detected_conference_name = cfp_to_conference_name[cfp]
-            if detected_conference_name.lower() in cfp.name.lower() or cfp.name.lower() in detected_conference_name.lower():
+            if detected_conference_name in cfp.name or cfp.name in detected_conference_name:
                 conference_name_score += 1
-                cfp_dict['correct_conference_name'] = True
 
         # Gets the first location extracted and uses that as the location (not final)
         if cfp_to_location[cfp]:
             detected_location = cfp_to_location[cfp][0]
             if detected_location in cfp.location or cfp.location in detected_location:
                 location_score += 1
-                cfp_dict['correct_location'] = True
 
         if cfp_to_url[cfp]:
             detected_url = cfp_to_url[cfp][0]
             if detected_url in cfp.url or cfp.url in detected_url:
                 url_score += 1
-                cfp_dict['correct_url'] = True
 
         cfp_dict['detected_location'] = detected_location
         cfp_dict['detected_conference_name'] = detected_conference_name
@@ -131,5 +126,5 @@ def evaluate_extraction(input_cfp_list):
     return conference_name_accuracy, location_accuracy, url_accuracy
 
 
-cfp_list = create_cfps('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/final_test_set.csv')
+cfp_list = create_cfps('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/final_set.csv')
 evaluate_extraction(cfp_list)

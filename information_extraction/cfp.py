@@ -1,5 +1,6 @@
 import dateparser
 import re
+import datefinder
 
 class Cfp:
 
@@ -96,11 +97,11 @@ class Cfp:
         # a dictionary mapping a date to the sentence it is in
         date_to_sentence = {}
         # returns a list of sentences, split on line breaks.
-        split_cfp_text = self.cfp_text.splitlines()
+        split_cfp_text = self.preprocess_text()
 
-        for sentence_doc in nlp.pipe(split_cfp_text, batch_size=len(split_cfp_text)):
+        for sentence_doc in nlp.pipe(split_cfp_text, batch_size=len(split_cfp_text), disable=["tagger", "parser"]):
             for entity in sentence_doc.ents:
-                if entity.label_ == "DATE" and len(entity.text) >= 10:
+                if entity.label_ == "DATE" and len(entity.text) >= 6:
                     date = entity.text
                     date_to_sentence[date] = sentence_doc.text[:]
 
@@ -109,6 +110,7 @@ class Cfp:
                             dateparser.parse(date) is not None}
         # returns a dictionary of form (date -> sentence)
         return date_to_sentence
+
 
     # TODO: improve conference name extraction
     def extract_conference_name(self, conference_name_regex=re.compile('$^'), ordinal_regex=re.compile('$^'),
@@ -134,31 +136,40 @@ class Cfp:
         # a dictionary of form (sentence -> score)
         candidate_names = {}
         split_cfp_text = self.preprocess_text()
-        print (split_cfp_text)
         counter = 0
 
-        for sent in split_cfp_text:
+        for index, sent in enumerate(split_cfp_text):
             score = 0
+            sent = sent.strip()
+            next_sentence_bonus = False
             if len(sent.split()) < 4 or len(sent.split()) > 20:
                 score -= 50
             if counter < 5:
-                counter += 10 - (2 * counter)
-            for word in sent.split():
-                if conference_name_regex.search(word):
-                    score += 8
-                if ordinal_regex.search(word) and counter < 10:
-                    score += 10
-                if conjunction_regex.search(word):
-                    score -= 5
-                if url_regex.search(word):
-                    score -= 5
+                score += 10 - (2 * counter)
+            if next_sentence_bonus:
+                score += 10
+            if "call for papers" in sent.lower():
+                next_sentence_bonus = True
+            if sent.endswith(" on") or sent.endswith(" for"):
+               sent += " " + split_cfp_text[index + 1]
+               print ("COMBINED STRING: " + sent)
+
+            if re.search(conference_name_regex, sent.lower()):
+                score += 8
+            if re.search(ordinal_regex, sent.lower()) and counter < 10:
+                score += 10
+            if re.search(conjunction_regex, sent.lower()):
+                score -= 5
+            if re.search(url_regex, sent.lower()):
+                score -= 5
 
             candidate_names[sent] = score
             counter += 1
 
         # return the sentence with the highest score
         highest_score = (max(candidate_names, key=candidate_names.get)) if candidate_names else 0
-        return highest_score
+
+        return candidate_names, highest_score
 
 
     def extract_urls(self, web_url_regex=re.compile('$^')):
@@ -186,21 +197,35 @@ class Cfp:
         Returns:
             list: a list of preprocessed sentences.
         """
-        text = self.cfp_text.strip("\n")
-        text = self.cfp_text.replace("\n", ". ")
-        text = self.cfp_text.replace("\t", ". ")
-        text = self.cfp_text.replace("  ", ". ")
-        split_text = text.split(". ")
-        split_text = [sent for sent in split_text if sent is not ""]
-        """
-        for index, sent in enumerate(split_text):
-            if sent == "":
-                split_text.remove(sent)
-            if "  " in sent:
-                split_text.remove(sent)
-            if sent.endswith(" on") and ("conference" in sent.lower() or "workshop" in sent.lower() or
-                                         "international" in sent.lower() or "symposium" in sent.lower()):
-                full_name = (split_text[index] + " " + split_text[index + 1])
-                return [full_name] + split_text
-        """
-        return split_text
+
+        text = self.cfp_text.replace('. ', '\n')
+        text = text.splitlines()
+        text = [substring for substring in text if substring is not ""]
+        return text
+
+    def extract_useful_sentences(self):
+
+        conference_date_list = ["when", "date", "workshop", "held", "conference", "symposium", "forum"]
+
+        # Regex patterns for identifying which date is which
+        CONFERENCE_DATES_REGEX = re.compile("|".join(conference_date_list))
+        SUBMISSION_DEADLINE_REGEX = re.compile("|".join(["submit", "submission", "paper", "due", "deadline", "submissions", "edition"]))
+        FINAL_VERSION_DEADLINE_REGEX = re.compile("|".join(["final", "camera", "ready", "camera-ready", "last"]))
+        NOTIFICATION_DEADLINE_REGEX = re.compile("|".join(["notice", "notices", "notified", "notification", "notifications", "acceptance"]))
+
+        split_cfp_text = self.preprocess_text()
+        useful_sentences = []
+
+        for sentence in split_cfp_text:
+            sentence_lower = sentence.lower()
+            if re.search(CONFERENCE_DATES_REGEX, sentence_lower):
+                useful_sentences.append(sentence)
+            elif re.search(SUBMISSION_DEADLINE_REGEX, sentence_lower):
+                useful_sentences.append(sentence)
+            elif re.search(NOTIFICATION_DEADLINE_REGEX, sentence_lower):
+                useful_sentences.append(sentence)
+            elif re.search(FINAL_VERSION_DEADLINE_REGEX, sentence_lower):
+                useful_sentences.append(sentence)
+
+        return useful_sentences
+

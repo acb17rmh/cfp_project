@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.utils import shuffle
@@ -37,8 +37,8 @@ class CFPClassifier():
                                     and the second DataFrame is the training data.
         """
         dataframe = shuffle(pd.read_csv(data, encoding="latin-1").fillna(" "))
-        new_df = dataframe[['text', 'class']].copy().head(1000)
-        print (new_df)
+        new_df = dataframe[['text', 'class']].copy()
+        new_df.to_html("results/new_df.html")
         data_train, data_test = train_test_split(new_df, test_size=test_size)
         return data_train, data_test
 
@@ -87,7 +87,7 @@ class CFPClassifier():
         # Run the classifier on test set and report performance
         test_counts, test_set = self.test_counts, self.data_test
         predictions = self.classifier.predict(test_counts)
-        print(classification_report(test_set["class"], predictions))
+        print(classification_report(test_set["class"], predictions, digits=6))
         print("ACCURACY: {:.2%}".format(accuracy_score(test_set["class"], predictions)))
 
         # Add the new labels to the DataFrame and save as an HTML document
@@ -96,6 +96,14 @@ class CFPClassifier():
         filename = "results/classifier_results{}.html".format(time.time())
         test_set.to_html(filename)
         print("Saved results to file {}".format(filename))
+
+        # plot confusion matrix as heatmap
+        hello = confusion_matrix(predictions, test_set["class"])
+        print(hello)
+
+        # 10-fold cross validation score
+        cross_validation_scores = cross_val_score(self.classifier, test_counts, test_set['class'], cv=10)
+        print(cross_validation_scores.mean())
 
     """
     def scatter_plot(self):
