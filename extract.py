@@ -2,10 +2,37 @@ import dateparser
 import pandas
 import re
 import spacy
-import time
+import argparse
+import os.path
+
+# Handles loading in files via command line arguments
+def is_valid_file(parser, arg):
+    """
+    Given a file path, checks that the file exists.
+    Args:
+        arg: the path to the file
+    Returns:
+          str: the file path as a string (if the file does exist)
+          error: an error (if the file does not exist)
+    """
+    if not os.path.isfile(arg):
+        parser.error("ERROR: file %s does not exist." % arg) # if no file throw error
+    else:
+        return arg  # else return file path
+
+parser = argparse.ArgumentParser(description='Extracts information from a CSV file of labelled CFPs.')
+parser._action_groups.pop()
+required = parser.add_argument_group('required arguments')
+optional = parser.add_argument_group('optional arguments')
+required.add_argument('-i', '-input', dest="input_file", required=True, help='a labelled CSV file to read from',
+                    type=lambda x: is_valid_file(parser, x))
+optional.add_argument('-o', '-output', dest="output_file", default="results/extracted_info.csv",
+                    help='a CSV file to write to. By default, will write to results/extracted_info.csv')
+args = parser.parse_args()
+
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv('data/test_set.csv', encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
+dataframe = pandas.read_csv(args.input_file, encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
 
 # Regex patterns for identifying which date is which
 CONFERENCE_DATES_REGEX = re.compile("|".join(["when", "workshop", "held", "conference", "held"]))
@@ -225,9 +252,8 @@ if __name__ == "__main__":
     dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
     dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-    filename = "results/ie_results_{}.csv".format(time.time())
-    dataframe.to_csv(filename, columns=["name", "location", "start_date", "submission_deadline", "notification_due",
+    dataframe.to_csv(args.output_file, columns=["name", "location", "start_date", "submission_deadline", "notification_due",
                                          "final_version_deadline", "detected_conference_name", "detected_location",
                                          "detected_start_date", "detected_submission_deadline", "detected_notification_due",
                                          "detected_final_version_deadline"], date_format='%d/%m/%Y')
-    print ("Extracted data saved to {}".format(filename))
+    print ("Extracted data saved to {}".format(args.output_file))
