@@ -1,10 +1,8 @@
 import dateparser
 import pandas
-import pprint
 import re
 import spacy
 import time
-from evaluate import evaluate
 
 # Load CFP data and convert dates from strings into Datetime objects
 dataframe = pandas.read_csv('data/test_set.csv', encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
@@ -22,14 +20,9 @@ CONJUNCTION_REGEX = re.compile("|".join(["conjunction", "assosciate", "joint", "
 WEB_URL_REGEX = re.compile(
     r"""(?i)\b((?:https?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’])|(?:(?<!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)\b/?(?!@)))""")
 
-# Takes a split date in the form DD-DD Month Year
-# and returns a tuple of datetime objects
-
-
 def extract_locations(doc):
     """
-    Extracts the first location mentioned in the CFP's text.
-
+    Extracts the first location mentioned in the CFP's text
     Args:
         doc: a spaCy document
     Returns:
@@ -51,7 +44,6 @@ def extract_conference_name(split_cfp_text):
     Function to extract the conference name from a CFP text. Uses rule-based patterns to assign scores to substrings
     of the CFP's text, and returns the one with the highest score. Takes regex patterns containing key words to filter
     by as parameters. By default, these regexes will match any string.
-
     Args:
         split_cfp_text: A list containing strings, where each string is a sentence in the original text.
     Returns:
@@ -105,7 +97,6 @@ def preprocess_text(text):
     """
     Method to preprocess text for information extraction. Text is split on newlines and commas,
     and any conference names split over 2 lines are merged into one.
-
     Args:
         split_cfp_text: A list containing strings, where each string is a sentence in the original text.
     Returns:
@@ -120,7 +111,6 @@ def preprocess_text(text):
 def extract_dates(split_cfp_text):
     """
     Function which extracts mentions of dates from the CFP's text.
-
     Args:
         split_cfp_text: A list containing strings, where each string is a sentence in the original text.
     Returns:
@@ -142,6 +132,13 @@ def extract_dates(split_cfp_text):
     return date_to_sentence
 
 def get_start_date(date_to_sentence):
+    """
+    Function to extract the start date of a conference from a Call for Paper.
+    Args:
+        date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
+    Returns:
+        conference_start: The date the conference starts, as a String.
+    """
     conference_start = None
 
     for date in date_to_sentence:
@@ -159,6 +156,13 @@ def get_start_date(date_to_sentence):
     return conference_start
 
 def get_submission_deadline(date_to_sentence):
+    """
+    Function to extract the submission deadline of a conference from a Call for Paper.
+    Args:
+        date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
+    Returns:
+        submission_deadline: The submission deadline date, as a String.
+    """
     submission_deadline = None
     for date in date_to_sentence:
         sentence = date_to_sentence[date].lower()
@@ -170,6 +174,13 @@ def get_submission_deadline(date_to_sentence):
     return submission_deadline
 
 def get_notification_due(date_to_sentence):
+    """
+    Function to extract the submission deadline of a conference from a Call for Paper.
+    Args:
+        date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
+    Returns:
+        notification_due: The notification due date, as a String.
+    """
     notification_due = None
     for date in date_to_sentence:
         sentence = date_to_sentence[date].lower()
@@ -181,6 +192,13 @@ def get_notification_due(date_to_sentence):
     return notification_due
 
 def get_final_version_deadline(date_to_sentence):
+    """
+    Function to extract the submission deadline of a conference from a Call for Paper.
+    Args:
+        date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
+    Returns:
+        final_version_deadline: The final version deadline date, as a String.
+    """
     final_version_deadline = None
     for date in date_to_sentence:
         sentence = date_to_sentence[date].lower()
@@ -191,28 +209,25 @@ def get_final_version_deadline(date_to_sentence):
                 final_version_deadline = date_object
     return final_version_deadline
 
+if __name__ == "__main__":
+    nlp = spacy.load('en_core_web_sm', disable=['tagger', 'parser', 'textcat'])
+    documents = []
+    for doc in nlp.pipe(dataframe['text']):
+        documents.append(doc)
 
-documents = []
-pp = pprint.PrettyPrinter(indent=4)
+    dataframe['document'] = documents
+    dataframe['detected_location'] = dataframe['document'].apply(extract_locations)
+    dataframe['split_cfp_text'] = dataframe['text'].apply(preprocess_text)
+    dataframe['detected_conference_name'] = dataframe['split_cfp_text'].apply(extract_conference_name)
+    dataframe['date_to_sentence'] = dataframe['split_cfp_text'].apply(extract_dates)
+    dataframe['detected_start_date'] = dataframe['date_to_sentence'].apply(get_start_date)
+    dataframe['detected_submission_deadline'] = dataframe['date_to_sentence'].apply(get_submission_deadline)
+    dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
+    dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-nlp = spacy.load('en_core_web_sm', disable=['tagger', 'parser', 'textcat'])
-
-for doc in nlp.pipe(dataframe['text']):
-    documents.append(doc)
-
-dataframe['document'] = documents
-dataframe['detected_location'] = dataframe['document'].apply(extract_locations)
-dataframe['split_cfp_text'] = dataframe['text'].apply(preprocess_text)
-dataframe['detected_conference_name'] = dataframe['split_cfp_text'].apply(extract_conference_name)
-dataframe['date_to_sentence'] = dataframe['split_cfp_text'].apply(extract_dates)
-dataframe['detected_start_date'] = dataframe['date_to_sentence'].apply(get_start_date)
-dataframe['detected_submission_deadline'] = dataframe['date_to_sentence'].apply(get_submission_deadline)
-dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
-dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
-
-filename = "results/ie_results_{}.csv".format(time.time())
-dataframe.to_csv(filename, columns=["name", "location", "start_date", "submission_deadline", "notification_due",
-                                     "final_version_deadline", "detected_conference_name", "detected_location",
-                                     "detected_start_date", "detected_submission_deadline", "detected_notification_due",
-                                     "detected_final_version_deadline"], date_format='%d/%m/%Y')
-print ("Extracted data saved to {}".format(filename))
+    filename = "results/ie_results_{}.csv".format(time.time())
+    dataframe.to_csv(filename, columns=["name", "location", "start_date", "submission_deadline", "notification_due",
+                                         "final_version_deadline", "detected_conference_name", "detected_location",
+                                         "detected_start_date", "detected_submission_deadline", "detected_notification_due",
+                                         "detected_final_version_deadline"], date_format='%d/%m/%Y')
+    print ("Extracted data saved to {}".format(filename))

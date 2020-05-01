@@ -1,14 +1,28 @@
 import pandas
 
-def eval_location(dataframe):
-    actual_loc = str(dataframe[0])
-    detected_loc = str(dataframe[1])
+def eval_location(locations_df):
+    """
+    Evaluates the performance of location extraction.
+    Args:
+        locations_df: a Pandas DataFrame of 2 columns, one for the labelled locations and the other for the
+                    detected location. Of the form: DataFrame['actual_location', 'detected_location'].
+    Returns:
+        bool: True if one location is a substring of the other, else False.
+    """
+    actual_loc = str(locations_df[0])
+    detected_loc = str(locations_df[1])
 
     if actual_loc in detected_loc or detected_loc in actual_loc:
         return True
     return False
 
 def evaluate(results_df):
+    """
+    Evaluates the performance of the information extraction system. Prints the number of correct samples and the
+    accuracy for each data label that was extracted.
+    Args:
+        results_df: a Pandas DataFrame of results, as returned in extract.py
+    """
     # Write new columns for each record, True if detected information is correct else False
     results_df['correct_start_date'] = results_df['start_date'] == results_df['detected_start_date']
     results_df['correct_notification_due'] = results_df['notification_due'] == results_df['detected_notification_due']
