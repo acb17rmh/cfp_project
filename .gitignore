@@ -5,3 +5,4 @@ cfp_classifier/data
 venv/
 .idea/
 cfp_classifier/results
+plots/

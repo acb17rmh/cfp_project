@@ -1,16 +1,13 @@
-from __future__ import unicode_literals, print_function
-
 import dateparser
 import pandas
 import pprint
 import re
 import spacy
-from cfp import Cfp
 import time
+from evaluate import evaluate
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/data/final_test_set.csv', encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
-
+dataframe = pandas.read_csv('data/test_set.csv', encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
 
 # Regex patterns for identifying which date is which
 CONFERENCE_DATES_REGEX = re.compile("|".join(["when", "workshop", "held", "conference", "held"]))
@@ -27,19 +24,11 @@ WEB_URL_REGEX = re.compile(
 
 # Takes a split date in the form DD-DD Month Year
 # and returns a tuple of datetime objects
-# TODO: split conference dates into start and end
-def split_date(date):
-    date = str(date)
-    if "-" in date:
-        new_date = date.split("-")[1]
-        return (dateparser.parse(date), dateparser.parse(new_date))
-    else:
-        return (dateparser.parse(date), None)
 
 
 def extract_locations(doc):
     """
-    Extracts all locations mentioned in the CFP's text.
+    Extracts the first location mentioned in the CFP's text.
 
     Args:
         doc: a spaCy document
@@ -63,6 +52,8 @@ def extract_conference_name(split_cfp_text):
     of the CFP's text, and returns the one with the highest score. Takes regex patterns containing key words to filter
     by as parameters. By default, these regexes will match any string.
 
+    Args:
+        split_cfp_text: A list containing strings, where each string is a sentence in the original text.
     Returns:
         str: The highest ranking string in the text.
     """
@@ -93,8 +84,6 @@ def extract_conference_name(split_cfp_text):
             next_sentence_bonus = True
         if sent.endswith(" on") or sent.endswith(" for"):
            sent += " " + split_cfp_text[index + 1]
-           print ("COMBINED STRING: " + sent)
-
         if re.search(conference_name_regex, sent.lower()):
             score += 8
         if re.search(ordinal_regex, sent.lower()) and counter < 10:
@@ -117,6 +106,8 @@ def preprocess_text(text):
     Method to preprocess text for information extraction. Text is split on newlines and commas,
     and any conference names split over 2 lines are merged into one.
 
+    Args:
+        split_cfp_text: A list containing strings, where each string is a sentence in the original text.
     Returns:
         list: a list of preprocessed sentences.
     """
@@ -131,7 +122,7 @@ def extract_dates(split_cfp_text):
     Function which extracts mentions of dates from the CFP's text.
 
     Args:
-        nlp: An instance of a Spacy NLP object.
+        split_cfp_text: A list containing strings, where each string is a sentence in the original text.
     Returns:
         dict: A dictionary of form {date -> sentence containing that date}.
     """
@@ -204,23 +195,7 @@ def get_final_version_deadline(date_to_sentence):
 documents = []
 pp = pprint.PrettyPrinter(indent=4)
 
-# dictionary mapping a cfp to the dates within it
-cfp_to_dates = {}
-conference_start_score = 0
-conference_end_score = 0
-submission_score = 0
-notification_score = 0
-final_version_score = 0
-conference_name_score = 0
-location_score = 0
-url_score = 0
-joint_score = 0
-triggers = 0
-counter = 0
-
 nlp = spacy.load('en_core_web_sm', disable=['tagger', 'parser', 'textcat'])
-print (nlp.pipe_names)
-
 
 for doc in nlp.pipe(dataframe['text']):
     documents.append(doc)
@@ -235,8 +210,9 @@ dataframe['detected_submission_deadline'] = dataframe['date_to_sentence'].apply(
 dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
 dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-dataframe.to_csv('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/NEW_RESULTS/new_results{}.csv'.format(time.time()),
-                  columns=["name", "location", "start_date", "submission_deadline", "notification_due", "final_version_deadline",
-                           "detected_conference_name", "detected_location", "detected_start_date", "detected_submission_deadline",
-                           "detected_notification_due", "detected_final_version_deadline"], date_format='%d/%m/%Y')
-
+filename = "results/ie_results_{}.csv".format(time.time())
+dataframe.to_csv(filename, columns=["name", "location", "start_date", "submission_deadline", "notification_due",
+                                     "final_version_deadline", "detected_conference_name", "detected_location",
+                                     "detected_start_date", "detected_submission_deadline", "detected_notification_due",
+                                     "detected_final_version_deadline"], date_format='%d/%m/%Y')
+print ("Extracted data saved to {}".format(filename))

@@ -1,6 +1,6 @@
 # cfp_project
 
-> A final year dissertation project exploring the extraction of information from Call for Papers. 
+> A final year dissertation project exploring the extraction of information from 'Call for Papers' emails. 
 
 ## Table of Contents
 
@@ -13,15 +13,15 @@
 ## Installation
 
 - Clone this repo to your local machine using `git clone https://github.com/acb17rmh/cfp_project`
-- Install required dependencies: `pip install -r requirements.txt`
+- Install the required dependencies: `pip install -r requirements.txt`
 
 ---
 
 ## Features
 
-- Ability to classify CFP emails
-- Ability to extract locations from CFP emails
-- Ability to extract key dates (e.g submission date, final version deadlines) from CFP emails (_work in progress_)
+- Classify a set of emails, labelling them as CFPs or non-CFPs
+- Extract the following information from a set of CFPs: conference name, location, start date, submission deadline,
+  notification due date and final version deadline.
 
 ---
 
