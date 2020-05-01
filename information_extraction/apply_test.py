@@ -218,16 +218,6 @@ joint_score = 0
 triggers = 0
 counter = 0
 
-def eval_loc(x):
-    actual_location = x['location']
-    detected_location = x['detected_location']
-
-    if actual_location in detected_location or detected_location in actual_location:
-        return True
-    else:
-        return False
-
-
 nlp = spacy.load('en_core_web_sm', disable=['tagger', 'parser', 'textcat'])
 print (nlp.pipe_names)
 
@@ -245,8 +235,8 @@ dataframe['detected_submission_deadline'] = dataframe['date_to_sentence'].apply(
 dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
 dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-dataframe.to_html('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/NEW_RESULTS/new_results{}.html'.format(time.time()),
+dataframe.to_csv('C:/Users/Richard/PycharmProjects/cfp_project/information_extraction/NEW_RESULTS/new_results{}.csv'.format(time.time()),
                   columns=["name", "location", "start_date", "submission_deadline", "notification_due", "final_version_deadline",
                            "detected_conference_name", "detected_location", "detected_start_date", "detected_submission_deadline",
-                           "detected_notification_due", "detected_final_version_deadline"])
+                           "detected_notification_due", "detected_final_version_deadline"], date_format='%d/%m/%Y')
 
