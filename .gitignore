@@ -1,8 +1,6 @@
 source_data/
-information_extraction/data
-information_extraction/results
-cfp_classifier/data
 venv/
 .idea/
-cfp_classifier/results
 plots/
+results/
+__pycache__/

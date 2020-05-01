@@ -15,7 +15,18 @@ import time
 
 class CFPClassifier():
 
-    def __init__(self, corpus, dump_model=False, model_name="trained_model.pkl", vectorizer_name="vectorizer.pkl"):
+    def __init__(self, corpus, dump_model=False, model_name="trained_model.sav", vectorizer_name="vectorizer.sav"):
+        """
+        Function to load a labelled dataset from a CSV file, and split it into a training set and a testing set.
+
+        Args:
+            corpus: the CSV file corpus upon which the classifier will be trained against.
+            dump_model: boolean value, if set to True, the classifier will be dumped as .sav files.
+            model_name: if dump_model is set to true, the model will be saved with this parameter as a filename.
+            vectorizer_name: if dump_model is set to true, the vectorizer will be saved with this parameter as a filename.
+        Returns:
+            CFPClassifier: an instance of a CFPClassifier object
+        """
         self.data_train, self.data_test = self.load_data(corpus)
         self.train_counts, self.test_counts = self.vectorize()
         self.vectorizer
@@ -40,13 +51,14 @@ class CFPClassifier():
         """
         dataframe = shuffle(pd.read_csv(data, encoding="latin-1").fillna(" "))
         new_df = dataframe[['text', 'class']].copy()
-        new_df.to_html("results/new_df.html")
+        new_df.to_html("results/new_df.docs")
         data_train, data_test = train_test_split(new_df, test_size=test_size)
         return data_train, data_test
 
     def vectorize(self):
         """
         Function to train the classifier on the data provided.
+
         Returns:
             (sparse matrix, sparse matrix): a tuple of sparse matrices, where the first matrix is the document-term
                                             matrix for the training data, and the second matrix is the document-term
@@ -61,6 +73,11 @@ class CFPClassifier():
     def train_classifier(self, dump_model=False, model_name="trained_model.sav", vectorizer_name="vectorizer.sav"):
         """
         Function to train the classifier on the data provided.
+
+        Args:
+            dump_model: if set to True, will dump the trained classifier and vectorizer as .sav files.
+            model_name: if dump_model is set to true, the model will be saved with this parameter as a filename.
+            vectorizer_name: if dump_model is set to true, the vectorizer will be saved with this parameter as a filename.
         Returns:
             MultinomialNB: a trained instance of an sklearn MultinomialNB object.
         """
@@ -75,6 +92,7 @@ class CFPClassifier():
     def classify_text(self, input_text_list):
         """
         Function to classify a set of input sets.
+
         Args:
             input_text_list: a list of strings to be classified.
         Returns:
@@ -88,6 +106,10 @@ class CFPClassifier():
         """
         Function to run the trained classifier on the test set of data and evaluate its performance.
         Also exports the results of the evaluation to an HTML document, which is saved in the /results subfolder.
+
+        Args:
+            model_path: if you want to use a dumped model, set this parameter to that model's file path
+            model_path: if you want to use a dumped vectorizer, set this parameter to that vectorizer's file path
         """
         # Run the classifier on test set and report performance
         test_counts, test_set = self.test_counts, self.data_test
@@ -105,7 +127,7 @@ class CFPClassifier():
         # Add the new labels to the DataFrame and save as an HTML document
         predictions_df = pd.DataFrame(predictions)
         test_set["prediction"] = predictions_df.values
-        filename = "results/classifier_results{}.html".format(time.time())
+        filename = "results/classifier_results{}.docs".format(time.time())
         test_set.to_html(filename)
         print("Saved results to file {}".format(filename))
 
