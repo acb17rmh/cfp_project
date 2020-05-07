@@ -1,14 +1,14 @@
 import pandas as pd
 import string
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.utils import shuffle
-import pickle
+from nltk import word_tokenize
+from nltk import WordNetLemmatizer
 import joblib
 import time
 
@@ -52,7 +52,7 @@ class CFPClassifier():
         dataframe = shuffle(pd.read_csv(data, encoding="latin-1").fillna(" "))
         new_df = dataframe[['text', 'class']].copy()
         new_df.to_html("results/new_df.docs")
-        data_train, data_test = train_test_split(new_df, test_size=test_size)
+        data_train, data_test = train_test_split(new_df, test_size=test_size, shuffle=True)
         return data_train, data_test
 
     def vectorize(self):
@@ -64,10 +64,17 @@ class CFPClassifier():
                                             matrix for the training data, and the second matrix is the document-term
                                             matrix for the testing data.
         """
-        vectorizer = CountVectorizer(analyzer=preprocess_text)
+        vectorizer = CountVectorizer(stop_words=stopwords.words("english"), lowercase=True)
         self.vectorizer = vectorizer
         train_counts = vectorizer.fit_transform(self.data_train['text'])
         test_counts = vectorizer.transform(self.data_test['text'])
+        feature_array = vectorizer.get_feature_names()
+        print('Top frequency in train set: \n', sorted(list(zip(vectorizer.get_feature_names(),
+                                               train_counts.sum(0).getA1())),
+                                      key=lambda x: x[1], reverse=True)[:30])
+        print('Top frequency in test set: \n', sorted(list(zip(vectorizer.get_feature_names(),
+                                               test_counts.sum(0).getA1())),
+                                      key=lambda x: x[1], reverse=True)[:30])
         return train_counts, test_counts
 
     def train_classifier(self, dump_model=False, model_name="trained_model.sav", vectorizer_name="vectorizer.sav"):
@@ -146,6 +153,13 @@ class CFPClassifier():
         plt.scatter(data2D[:, 0], data2D[:, 1])
         plt.show()
     """
+
+def tokenize(text):
+    tokens = word_tokenize(text)
+    stems = []
+    for item in tokens:
+        stems.append(WordNetLemmatizer().lemmatize(item))
+    return stems
 
 def preprocess_text(text):
     """

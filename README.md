@@ -22,7 +22,7 @@
 - Classify a set of emails, labelling them as CFPs or non-CFPs
 - Extract the following information from a set of CFPs: conference name, location, start date, submission deadline,
   notification due date and final version deadline.
-
+  
 ---
 
 ## License

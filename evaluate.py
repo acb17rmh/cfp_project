@@ -40,6 +40,22 @@ def eval_location(locations_df):
         return True
     return False
 
+def eval_names(names_df):
+    score = 0
+    actual_names_tokens = str(names_df[0]).split()
+    detected_names_tokens = str(names_df[1]).split()
+
+    for token in detected_names_tokens:
+        if token in actual_names_tokens:
+            score += 1
+
+    if score == len(actual_names_tokens):
+        print ("PERFECT MATCH: {} -------------- {}".format(names_df[0], names_df[1]))
+
+    return score / len(actual_names_tokens)
+
+
+
 def evaluate(results_df):
     """
     Evaluates the performance of the information extraction system. Prints the number of correct samples and the
@@ -53,14 +69,16 @@ def evaluate(results_df):
     results_df['correct_submission_deadline'] = results_df['submission_deadline'] == results_df['detected_submission_deadline']
     results_df['correct_final_version_deadline'] = results_df['final_version_deadline'] == results_df['detected_final_version_deadline']
     results_df['correct_location'] = results_df[['location', 'detected_location']].apply(eval_location, axis=1)
-    results_df['correct_conference_name'] = results_df[['name', 'detected_conference_name']].apply(eval_location, axis=1)
+    results_df['conference_name_score'] = results_df[['name', 'detected_conference_name']].apply(eval_names, axis=1)
+    results_df['conference_name_match'] = results_df["conference_name_score"] == 1
+
 
     number_of_records = len(results_df.index)
     print ("NUMBER OF RECORDS: {}".format(number_of_records))
 
     # Print the number and accuracy of extraction for each piece of data
-    print ("CONFERENCE NAME PERFORMANCE: \n CORRECT RECORDS {} \n ACCURACY {:.2%}"
-       .format(results_df.correct_conference_name.sum(), results_df.correct_conference_name.sum()/number_of_records))
+    print ("CONFERENCE NAME PERFORMANCE: \n SCORE: {}  \n PERFECT MATCHES: {} \n AVERAGE SCORE: {:.2%}"
+       .format(results_df.conference_name_score.sum(), results_df.conference_name_match.sum(), results_df.conference_name_score.sum()/number_of_records))
     print ("LOCATION PERFORMANCE: \n CORRECT RECORDS {} \n ACCURACY {:.2%}"
        .format(results_df.correct_location.sum(), results_df.correct_location.sum()/number_of_records))
     print ("START DATE PERFORMANCE: \n CORRECT RECORDS {} \n ACCURACY {:.2%}"
@@ -73,13 +91,13 @@ def evaluate(results_df):
        .format(results_df.correct_final_version_deadline.sum(), results_df.correct_final_version_deadline.sum()/number_of_records))
 
     # Print joint accuracies (key data and all data)
-    joint_score = (sum((results_df['correct_start_date']) & (results_df['correct_location'] & results_df['correct_conference_name'] &
+    joint_score = (sum((results_df['correct_start_date']) & (results_df['correct_location'] & results_df['conference_name_match'] &
                                                  results_df['correct_final_version_deadline'] &
                                                  results_df['correct_notification_due'] &
                                                  results_df['correct_submission_deadline'])))
     print ("JOINT SCORE: {}, {:.2%}".format(joint_score, joint_score/number_of_records))
 
-    key_joint_score = (sum((results_df['correct_start_date']) & (results_df['correct_location'] & results_df['correct_conference_name'])))
+    key_joint_score = (sum((results_df['correct_start_date']) & (results_df['correct_location'] & results_df['conference_name_match'])))
     print ("KEY DATA JOINT SCORE: {}, {:.2%}".format(key_joint_score, key_joint_score/number_of_records))
 
 if __name__ == "__main__":
