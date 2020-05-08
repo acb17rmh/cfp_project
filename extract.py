@@ -166,6 +166,10 @@ def get_start_date(date_to_sentence):
     Returns:
         conference_start: The date the conference starts, as a String.
     """
+
+    if not date_to_sentence:
+        return None
+
     conference_start = None
 
     for date in date_to_sentence:
@@ -190,6 +194,8 @@ def get_submission_deadline(date_to_sentence):
     Returns:
         submission_deadline: The submission deadline date, as a String.
     """
+    if not date_to_sentence:
+        return None
     submission_deadline = None
     for date in date_to_sentence:
         sentence = date_to_sentence[date].lower()
@@ -208,6 +214,8 @@ def get_notification_due(date_to_sentence):
     Returns:
         notification_due: The notification due date, as a String.
     """
+    if not date_to_sentence:
+        return None
     notification_due = None
     for date in date_to_sentence:
         sentence = date_to_sentence[date].lower()
@@ -226,6 +234,8 @@ def get_final_version_deadline(date_to_sentence):
     Returns:
         final_version_deadline: The final version deadline date, as a String.
     """
+    if not date_to_sentence:
+        return None
     final_version_deadline = None
     for date in date_to_sentence:
         sentence = date_to_sentence[date].lower()
@@ -252,8 +262,7 @@ if __name__ == "__main__":
     dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
     dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-    dataframe.to_csv(args.output_file, columns=["name", "location", "start_date", "submission_deadline", "notification_due",
-                                         "final_version_deadline", "detected_conference_name", "detected_location",
+    dataframe.to_csv(args.output_file, columns=["text", "detected_conference_name", "detected_location",
                                          "detected_start_date", "detected_submission_deadline", "detected_notification_due",
                                          "detected_final_version_deadline"], date_format='%d/%m/%Y')
     print ("Extracted data saved to {}".format(args.output_file))

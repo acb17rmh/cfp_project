@@ -1,5 +1,4 @@
 import pandas as pd
-import string
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import accuracy_score
@@ -7,8 +6,6 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.utils import shuffle
-from nltk import word_tokenize
-from nltk import WordNetLemmatizer
 import joblib
 import time
 
@@ -35,7 +32,7 @@ class CFPClassifier():
         self.vectorizer_name = vectorizer_name
         self.classifier = self.train_classifier(dump_model)
 
-    def load_data(self, data, test_size=0.3):
+    def load_data(self, data, test_size=0.1):
         """
         Function to load a labelled dataset from a CSV file, and split it into a training set and a testing set.
 
@@ -50,7 +47,7 @@ class CFPClassifier():
                                     and the second DataFrame is the training data.
         """
         dataframe = shuffle(pd.read_csv(data, encoding="latin-1").fillna(" "))
-        new_df = dataframe[['text', 'class']].copy()
+        new_df = dataframe[['text', 'class_label']].copy()
         new_df.to_html("results/new_df.docs")
         data_train, data_test = train_test_split(new_df, test_size=test_size, shuffle=True)
         return data_train, data_test
@@ -68,13 +65,6 @@ class CFPClassifier():
         self.vectorizer = vectorizer
         train_counts = vectorizer.fit_transform(self.data_train['text'])
         test_counts = vectorizer.transform(self.data_test['text'])
-        feature_array = vectorizer.get_feature_names()
-        print('Top frequency in train set: \n', sorted(list(zip(vectorizer.get_feature_names(),
-                                               train_counts.sum(0).getA1())),
-                                      key=lambda x: x[1], reverse=True)[:30])
-        print('Top frequency in test set: \n', sorted(list(zip(vectorizer.get_feature_names(),
-                                               test_counts.sum(0).getA1())),
-                                      key=lambda x: x[1], reverse=True)[:30])
         return train_counts, test_counts
 
     def train_classifier(self, dump_model=False, model_name="trained_model.sav", vectorizer_name="vectorizer.sav"):
@@ -89,7 +79,7 @@ class CFPClassifier():
             MultinomialNB: a trained instance of an sklearn MultinomialNB object.
         """
         classifier = MultinomialNB()
-        targets = self.data_train["class"]
+        targets = self.data_train["class_label"]
         classifier.fit(self.train_counts, targets)
         if self.dump_model:
             joblib.dump(self.vectorizer, self.vectorizer_name)
@@ -128,56 +118,29 @@ class CFPClassifier():
             predictions = loaded_model.predict(test_counts)
         else:
             predictions = self.classifier.predict(test_counts)
-        print(classification_report(test_set["class"], predictions, digits=6))
-        print("ACCURACY: {:.2%}".format(accuracy_score(test_set["class"], predictions)))
+        print(classification_report(test_set["class_label"], predictions, digits=6))
+        print("ACCURACY: {:.2%}".format(accuracy_score(test_set["class_label"], predictions)))
 
         # Add the new labels to the DataFrame and save as an HTML document
         predictions_df = pd.DataFrame(predictions)
         test_set["prediction"] = predictions_df.values
-        filename = "results/classifier_results{}.docs".format(time.time())
+        filename = "results/classifier_results.html"
         test_set.to_html(filename)
         print("Saved results to file {}".format(filename))
 
-        # plot confusion matrix as heatmap
-        conf = confusion_matrix(predictions, test_set["class"])
+        # Save all classified CFPs to a csv file
+        cfps_df = test_set[test_set['prediction'] == "cfp"]
+        cols = ["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"]
+        cfps_df = cfps_df.reindex(columns=cols)
+        cfps_df.to_csv("results/classified_cfps.csv")
+
+        # plot confusion matrix
+        conf = confusion_matrix(predictions, test_set["class_label"])
         print(conf)
 
         # 10-fold cross validation score
-        cross_validation_scores = cross_val_score(self.classifier, test_counts, test_set['class'], cv=10)
+        cross_validation_scores = cross_val_score(self.classifier, test_counts, test_set['class_label'], cv=10)
         print(cross_validation_scores.mean())
-
-    """
-    def scatter_plot(self):
-        svd = TruncatedSVD(n_components=2).fit(self.train_counts)
-        data2D = svd.transform(self.train_counts)
-        plt.scatter(data2D[:, 0], data2D[:, 1])
-        plt.show()
-    """
-
-def tokenize(text):
-    tokens = word_tokenize(text)
-    stems = []
-    for item in tokens:
-        stems.append(WordNetLemmatizer().lemmatize(item))
-    return stems
-
-def preprocess_text(text):
-    """
-    Function to preprocess input texts before being vectorized. Performs tokenisation and stopword removal,
-    and removes punctuation from the text.
-
-    Args:
-        text: the input text to be preprocessed
-    Returns:
-        list: a list of words in the text
-    """
-    # get the stoplist from the NLTK corpus
-    stoplist = (stopwords.words("english"))
-    # uses NLTK to tokenise the input email
-    text = word_tokenize(text)
-    # removes any punctuation or words if they are in the stoplist
-    text_words = [word for word in text if word not in stoplist and word not in string.punctuation]
-    return text_words
 
 if __name__ == "__main__":
     cfp_classifier = CFPClassifier("data/corpus.csv")
