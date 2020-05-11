@@ -6,7 +6,7 @@
 
 - [Installation](#installation)
 - [Features](#features)
-- [License](#license)
+- [Usage](#usage)
 
 ---
 
@@ -25,8 +25,9 @@
   
 ---
 
-## License
+## Usage
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
-- **[GPL v3 license](https://choosealicense.com/licenses/gpl-3.0/#)**
+- To train the classifier on the corpus and evaluate performance: `python cfp_classifier.py`
+- To run the extraction system: `python extract.py -i INPUTFILENAME -o OUTPUTFILENAME`
+- To run the evaluation system: `python evaluate.py -i INPUTFILENAME`
+ 

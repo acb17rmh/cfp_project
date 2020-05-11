@@ -7,8 +7,6 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.utils import shuffle
 import joblib
-import time
-
 
 class CFPClassifier():
 
