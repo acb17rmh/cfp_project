@@ -4,3 +4,4 @@ venv/
 plots/
 results/
 __pycache__/
+data/personal_emails
