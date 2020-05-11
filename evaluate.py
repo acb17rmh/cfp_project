@@ -49,9 +49,6 @@ def eval_names(names_df):
         if token in actual_names_tokens:
             score += 1
 
-    if score == len(actual_names_tokens):
-        print ("PERFECT MATCH: {} -------------- {}".format(names_df[0], names_df[1]))
-
     return score / len(actual_names_tokens)
 
 

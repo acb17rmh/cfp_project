@@ -262,7 +262,9 @@ if __name__ == "__main__":
     dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
     dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-    dataframe.to_csv(args.output_file, columns=["text", "detected_conference_name", "detected_location",
-                                         "detected_start_date", "detected_submission_deadline", "detected_notification_due",
-                                         "detected_final_version_deadline"], date_format='%d/%m/%Y')
+    dataframe.to_csv(args.output_file, columns=["text", "notification_due", "start_date", "location",
+                                                "final_version_deadline", "name", "submission_deadline",
+                                                "detected_conference_name", "detected_location", "detected_start_date",
+                                                "detected_submission_deadline", "detected_notification_due",
+                                                "detected_final_version_deadline"], date_format='%d/%m/%Y')
     print ("Extracted data saved to {}".format(args.output_file))
