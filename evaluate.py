@@ -2,17 +2,17 @@ import pandas
 import argparse
 import os.path
 
-"""
+
 # Handles loading in files via command line arguments
 def is_valid_file(parser, arg):
- 
+    """
     Given a file path, checks that the file exists.
     Args:
         arg: the path to the file
     Returns:
           str: the file path as a string (if the file does exist)
           error: an error (if the file does not exist)
-
+    """
     if not os.path.isfile(arg):
         parser.error("ERROR: file %s does not exist." % arg) # if no file throw error
     else:
@@ -24,7 +24,7 @@ parser.add_argument('-i', '-input', dest="input_file", default="results/extracte
                     help='a output CSV file created by extract.py. By default, will read from results/extracted_info.csv.',
                     type=lambda x: is_valid_file(parser, x))
 args = parser.parse_args()
-"""
+
 def eval_location(locations_df):
     """
     Evaluates the performance of location extraction.
@@ -99,5 +99,5 @@ def evaluate(results_df):
     print ("KEY DATA JOINT SCORE: {}, {:.2%}".format(key_joint_score, key_joint_score/number_of_records))
 
 if __name__ == "__main__":
-    results_df = pandas.read_csv("results/extracted_info.csv", encoding="latin-1")
+    results_df = pandas.read_csv(args.input_file, encoding="latin-1")
     evaluate(results_df)
