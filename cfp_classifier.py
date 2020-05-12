@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.utils import shuffle
+from sklearn.svm import SVC
 import joblib
 
 class CFPClassifier():
@@ -30,7 +30,7 @@ class CFPClassifier():
         self.vectorizer_name = vectorizer_name
         self.classifier = self.train_classifier(dump_model)
 
-    def load_data(self, data, test_size=0.1):
+    def load_data(self, data, test_size=0.3):
         """
         Function to load a labelled dataset from a CSV file, and split it into a training set and a testing set.
 
@@ -44,10 +44,10 @@ class CFPClassifier():
             (DataFrame, DataFrame): a tuple of Pandas DataFrames, where the first DataFrame is the training data,
                                     and the second DataFrame is the training data.
         """
-        dataframe = shuffle(pd.read_csv(data, encoding="latin-1").fillna(" "))
-        new_df = dataframe[['text', 'class_label']].copy()
-        new_df.to_html("results/new_df.docs")
-        data_train, data_test = train_test_split(new_df, test_size=test_size, shuffle=True)
+        df = pd.read_csv(data, encoding="latin-1").fillna(" ")
+        df.drop_duplicates(inplace=True)
+        data_train, data_test = train_test_split(df, test_size=test_size, shuffle=True, random_state=1000)
+
         return data_train, data_test
 
     def vectorize(self):
@@ -63,6 +63,7 @@ class CFPClassifier():
         self.vectorizer = vectorizer
         train_counts = vectorizer.fit_transform(self.data_train['text'])
         test_counts = vectorizer.transform(self.data_test['text'])
+
         return train_counts, test_counts
 
     def train_classifier(self, dump_model=False, model_name="trained_model.sav", vectorizer_name="vectorizer.sav"):
@@ -108,6 +109,7 @@ class CFPClassifier():
         """
         # Run the classifier on test set and report performance
         test_counts, test_set = self.test_counts, self.data_test
+
         if model_path:
             print ("Using trained model '{}' and vectorizer '{}'".format(model_path, vectorizer_path))
             loaded_model = joblib.load(model_path)

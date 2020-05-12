@@ -4,17 +4,17 @@ import re
 import spacy
 import argparse
 import os.path
-
+"""
 # Handles loading in files via command line arguments
 def is_valid_file(parser, arg):
-    """
+    
     Given a file path, checks that the file exists.
     Args:
         arg: the path to the file
     Returns:
           str: the file path as a string (if the file does exist)
           error: an error (if the file does not exist)
-    """
+    
     if not os.path.isfile(arg):
         parser.error("ERROR: file %s does not exist." % arg) # if no file throw error
     else:
@@ -29,10 +29,10 @@ required.add_argument('-i', '-input', dest="input_file", required=True, help='a 
 optional.add_argument('-o', '-output', dest="output_file", default="results/extracted_info.csv",
                     help='a CSV file to write to. By default, will write to results/extracted_info.csv')
 args = parser.parse_args()
-
+"""
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv(args.input_file, encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
+dataframe = pandas.read_csv("../data/test_set.csv", encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
 
 # Regex patterns for identifying which date is which
 CONFERENCE_DATES_REGEX = re.compile("|".join(["when", "workshop", "held", "conference", "held"]))
@@ -131,11 +131,13 @@ def preprocess_text(text):
     """
 
     text = text.replace('. ', '\n')
+    text = text.replace('? ', '\n')
+    text = text.replace('! ', '\n')
     text = text.splitlines()
     text = [substring for substring in text if substring is not ""]
     return text
 
-def extract_dates(split_cfp_text):
+def extract_dates(split_cfp_text, nlp):
     """
     Function which extracts mentions of dates from the CFP's text.
     Args:
@@ -247,8 +249,10 @@ def get_final_version_deadline(date_to_sentence):
     return final_version_deadline
 
 if __name__ == "__main__":
+
     nlp = spacy.load('en_core_web_sm', disable=['tagger', 'parser', 'textcat'])
     documents = []
+
     for doc in nlp.pipe(dataframe['text']):
         documents.append(doc)
 
@@ -256,15 +260,16 @@ if __name__ == "__main__":
     dataframe['detected_location'] = dataframe['document'].apply(extract_locations)
     dataframe['split_cfp_text'] = dataframe['text'].apply(preprocess_text)
     dataframe['detected_conference_name'] = dataframe['split_cfp_text'].apply(extract_conference_name)
-    dataframe['date_to_sentence'] = dataframe['split_cfp_text'].apply(extract_dates)
+    dataframe['date_to_sentence'] = dataframe['split_cfp_text'].apply(extract_dates, nlp)
     dataframe['detected_start_date'] = dataframe['date_to_sentence'].apply(get_start_date)
     dataframe['detected_submission_deadline'] = dataframe['date_to_sentence'].apply(get_submission_deadline)
     dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
     dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-    dataframe.to_csv(args.output_file, columns=["text", "notification_due", "start_date", "location",
+    dataframe.to_csv("results/extracted_info.csv", columns=["text", "notification_due", "start_date", "location",
                                                 "final_version_deadline", "name", "submission_deadline",
                                                 "detected_conference_name", "detected_location", "detected_start_date",
                                                 "detected_submission_deadline", "detected_notification_due",
                                                 "detected_final_version_deadline"], date_format='%d/%m/%Y')
-    print ("Extracted data saved to {}".format(args.output_file))
+    print ("Extracted data saved to {}".format("results/extracted_info.csv"))
+
