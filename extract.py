@@ -1,3 +1,5 @@
+import datetime
+
 import dateparser
 import pandas
 import re
@@ -31,7 +33,7 @@ optional.add_argument('-o', '-output', dest="output_file", default="results/extr
 args = parser.parse_args()
 
 # Load CFP data and convert dates from strings into Datetime objects
-dataframe = pandas.read_csv(args.input_file, encoding="latin-1", usecols=["text", "location", "name", "start_date", "submission_deadline", "notification_due", "final_version_deadline"])
+dataframe = pandas.read_csv(args.input_file, encoding="latin-1", usecols=["text", "location", "name", "start_date", "end_date", "submission_deadline", "notification_due", "final_version_deadline"])
 
 # Regex patterns for identifying which date is which
 CONFERENCE_DATES_REGEX = re.compile("|".join(["when", "workshop", "held", "conference", "held"]))
@@ -133,7 +135,7 @@ def preprocess_text(text):
     text = text.replace('? ', '\n')
     text = text.replace('! ', '\n')
     text = text.splitlines()
-    text = [substring for substring in text if substring is not ""]
+    text = [substring for substring in text if substring != ""]
     return text
 
 def extract_dates(split_cfp_text):
@@ -156,7 +158,7 @@ def extract_dates(split_cfp_text):
         # removes any dates that cannot be parsed, i.e are incomplete, and makes sentence lowercase for next step
     date_to_sentence = {date: sent.lower() for date, sent in date_to_sentence.items() if
                         dateparser.parse(date) is not None}
-    # returns a dictionary of form (date -> sentence)
+    # returns a dictionary of form (date -
     return date_to_sentence
 
 def get_start_date(date_to_sentence):
@@ -165,7 +167,7 @@ def get_start_date(date_to_sentence):
     Args:
         date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
     Returns:
-        conference_start: The date the conference starts, as a String.
+        conference_start: The date the conference starts, as a DateTime object.
     """
 
     if not date_to_sentence:
@@ -175,10 +177,8 @@ def get_start_date(date_to_sentence):
 
     for date in date_to_sentence:
         sentence = date_to_sentence[date].lower()
-        date_object = dateparser.parse(date)
-
         if re.search(CONFERENCE_DATES_REGEX, sentence):
-            conference_start = date_object
+            conference_start = split_dates(date)[0]
 
     # if no date found for start date, then use the first one found
     if conference_start is None:
@@ -187,13 +187,34 @@ def get_start_date(date_to_sentence):
 
     return conference_start
 
+def get_end_date(date_to_sentence):
+    """
+    Function to extract the end date of a conference from a Call for Paper.
+    Args:
+        date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
+    Returns:
+        conference_start: The date the conference ends, as a DateTime object.
+    """
+
+    if not date_to_sentence:
+        return None
+
+    conference_end = None
+
+    for date in date_to_sentence:
+        sentence = date_to_sentence[date].lower()
+        if re.search(CONFERENCE_DATES_REGEX, sentence):
+            conference_end = split_dates(date)[1]
+
+    return conference_end
+
 def get_submission_deadline(date_to_sentence):
     """
     Function to extract the submission deadline of a conference from a Call for Paper.
     Args:
         date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
     Returns:
-        submission_deadline: The submission deadline date, as a String.
+        submission_deadline: The submission deadline date, as a DateTime object.
     """
     if not date_to_sentence:
         return None
@@ -213,7 +234,7 @@ def get_notification_due(date_to_sentence):
     Args:
         date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
     Returns:
-        notification_due: The notification due date, as a String.
+        notification_due: The notification due date, as a DateTime object.
     """
     if not date_to_sentence:
         return None
@@ -233,7 +254,7 @@ def get_final_version_deadline(date_to_sentence):
     Args:
         date_to_sentence: a dictionary mapping each date in the text to the sentence containing it.
     Returns:
-        final_version_deadline: The final version deadline date, as a String.
+        final_version_deadline: The final version deadline date, as a DateTime object.
     """
     if not date_to_sentence:
         return None
@@ -246,6 +267,46 @@ def get_final_version_deadline(date_to_sentence):
             if final_version_deadline is None:
                 final_version_deadline = date_object
     return final_version_deadline
+
+
+def split_dates(raw_date):
+    """
+    Function to split a date range into a separate start date and end date.
+    Args:
+        raw_date: the raw text date range to split
+    Returns:
+        (start_date, end_date): a tuple of DateTime objects
+    """
+
+    print (raw_date)
+    start_date = None
+    end_date = None
+
+    if "-" not in raw_date:
+        start_date = (dateparser.parse(raw_date))
+        end_date = (dateparser.parse(raw_date))
+    elif raw_date[0].isdigit():
+        split = (raw_date.split("-"))
+        start_date = (dateparser.parse(raw_date))
+        end_date = (dateparser.parse(split[1]))
+    else:
+        split = (raw_date.split(" "))
+        print (split)
+        for data in split:
+            if "-" in data:
+                split_days = data.split("-")
+                if len(split) == 3:
+                    start_date_string = split_days[0] + " " + split[0] + " " + split[2]
+                    end_date_string = split_days[1] + " " + split[0] + " " + split[2]
+                else:
+                    # year defaults to current year if none supplied
+                    now = datetime.datetime.now()
+                    start_date_string = split_days[0] + " " + split[0] + " " + str(now.year)
+                    end_date_string = split_days[1] + " " + split[0] + " " + str(now.year)
+                start_date = dateparser.parse(start_date_string)
+                end_date = dateparser.parse(end_date_string)
+
+    return (start_date, end_date)
 
 if __name__ == "__main__":
 
@@ -261,13 +322,14 @@ if __name__ == "__main__":
     dataframe['detected_conference_name'] = dataframe['split_cfp_text'].apply(extract_conference_name)
     dataframe['date_to_sentence'] = dataframe['split_cfp_text'].apply(extract_dates)
     dataframe['detected_start_date'] = dataframe['date_to_sentence'].apply(get_start_date)
+    dataframe['detected_end_date'] = dataframe['date_to_sentence'].apply(get_end_date)
     dataframe['detected_submission_deadline'] = dataframe['date_to_sentence'].apply(get_submission_deadline)
     dataframe['detected_notification_due'] = dataframe['date_to_sentence'].apply(get_notification_due)
     dataframe['detected_final_version_deadline'] = dataframe['date_to_sentence'].apply(get_final_version_deadline)
 
-    dataframe.to_csv(args.output_file, columns=["text", "notification_due", "start_date", "location",
+    dataframe.to_csv(args.output_file, columns=["text", "notification_due", "start_date", "end_date", "location",
                                                 "final_version_deadline", "name", "submission_deadline",
-                                                "detected_conference_name", "detected_location", "detected_start_date",
+                                                "detected_conference_name", "detected_location", "detected_start_date", "detected_end_date",
                                                 "detected_submission_deadline", "detected_notification_due",
                                                 "detected_final_version_deadline"], date_format='%d/%m/%Y')
     print ("Extracted data saved to {}".format(args.output_file))
