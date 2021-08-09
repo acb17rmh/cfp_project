@@ -4,6 +4,6 @@ lxml == 4.5.0
 nltk == 3.4.5
 pandas == 1.0.3
 pip == 20.0.2
-pywin32 == 227git
+pywin32 == 301
 scikit_learn == 0.22.1
 spacy == 2.2.4
