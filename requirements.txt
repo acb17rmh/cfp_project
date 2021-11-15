@@ -3,7 +3,7 @@ joblib == 0.14.1
 lxml == 4.5.0
 nltk == 3.4.5
 pandas == 1.0.3
-pip == 20.0.2
+pip == 21.1
 pywin32 == 227git
 scikit_learn == 0.22.1
 spacy == 2.2.4
